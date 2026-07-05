@@ -1,116 +1,157 @@
+import Head from "next/head";
 import { useState } from "react";
-import { Sparkles, ArrowRight, Wand2, Image as ImageIcon, Loader2 } from "lucide-react";
 
 export default function Home() {
-  const [url, setUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleGenerate = () => {
-    if (!url) return;
-    setLoading(true);
-    // Placeholder — will connect to backend generation logic in a later step
-    setTimeout(() => setLoading(false), 2000);
-  };
+  const [email, setEmail] = useState("");
 
   return (
-    <div className="min-h-screen bg-background bg-grid-glow text-white overflow-x-hidden">
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 md:px-12 py-6 border-b border-border/60 backdrop-blur-sm sticky top-0 z-50 bg-background/70">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-glow">
-            <Sparkles className="w-4 h-4 text-white" />
+    <>
+      <Head>
+        <title>Weby AI | Agentic Intelligence</title>
+        <link
+          href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Inter:wght@300;400;600&display=swap"
+          rel="stylesheet"
+        />
+      </Head>
+
+      <div
+        className="bg-white text-neutral-900 min-h-screen selection:bg-neutral-900 selection:text-white"
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          backgroundImage:
+            "linear-gradient(to right, #f0f0f0 1px, transparent 1px), linear-gradient(to bottom, #f0f0f0 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      >
+        {/* Nav */}
+        <nav className="fixed top-6 left-6 right-6 md:left-1/2 md:-translate-x-1/2 md:w-[600px] backdrop-blur-md bg-white/60 border border-neutral-200/50 rounded-full px-6 py-3 shadow-sm z-50 flex justify-between items-center">
+          <div className="text-lg font-bold tracking-tight">Weby.</div>
+          <div className="hidden md:flex gap-8 text-[11px] uppercase tracking-[0.2em] font-medium text-neutral-500">
+            <a href="#features" className="hover:text-neutral-900 transition-colors">
+              Features
+            </a>
+            <a href="#waitlist" className="hover:text-neutral-900 transition-colors">
+              Waitlist
+            </a>
           </div>
-          <span className="text-lg font-semibold tracking-tight">
-            Weby <span className="text-primary">AI</span>
-          </span>
-        </div>
-
-        <nav className="hidden md:flex items-center gap-8 text-sm text-white/60">
-          <a href="#" className="hover:text-white transition-colors">Features</a>
-          <a href="#" className="hover:text-white transition-colors">Pricing</a>
-          <a href="#" className="hover:text-white transition-colors">Docs</a>
-        </nav>
-
-        <button className="text-sm font-medium px-4 py-2 rounded-lg border border-border hover:border-primary/60 hover:bg-primary/10 transition-all">
-          Sign In
-        </button>
-      </header>
-
-      {/* Hero */}
-      <section className="flex flex-col items-center text-center px-6 pt-24 pb-16 md:pt-32 md:pb-20">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-surface/60 text-xs text-white/60 mb-6">
-          <Wand2 className="w-3.5 h-3.5 text-secondary" />
-          AI-Powered Brand Design
-        </div>
-
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight max-w-3xl">
-          Turn any website into
-          <br />
-          <span className="bg-gradient-to-r from-primary via-purple-400 to-secondary bg-clip-text text-transparent">
-            stunning visual templates
-          </span>
-        </h1>
-
-        <p className="text-white/50 mt-6 max-w-xl text-base md:text-lg">
-          Paste a URL. Weby AI analyzes the brand's colors, fonts, and tone —
-          then instantly generates matching templates and images for you.
-        </p>
-
-        {/* Input + Generate */}
-        <div className="mt-10 w-full max-w-xl">
-          <div className="flex items-center gap-2 p-2 rounded-2xl bg-surface border border-border focus-within:border-primary/60 transition-colors shadow-lg">
-            <input
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://yourbrand.com"
-              className="flex-1 bg-transparent outline-none px-3 py-2.5 text-sm md:text-base placeholder:text-white/30"
-            />
-            <button
-              onClick={handleGenerate}
-              disabled={loading}
-              className="group flex items-center gap-2 px-4 md:px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary font-medium text-sm md:text-base shadow-glow hover:shadow-glow-cyan transition-all disabled:opacity-70"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating
-                </>
-              ) : (
-                <>
-                  Generate
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </>
-              )}
+          <div className="flex items-center gap-3">
+            <button className="text-[10px] uppercase tracking-widest hover:text-neutral-500 transition-colors">
+              Sign In
+            </button>
+            <button className="bg-neutral-900 text-white text-[10px] px-4 py-2 rounded-full uppercase tracking-widest hover:bg-neutral-700 transition-all">
+              Sign Up
             </button>
           </div>
-          <p className="text-xs text-white/30 mt-3">
-            No sign-up required for your first generation.
-          </p>
-        </div>
-      </section>
+        </nav>
 
-      {/* Results Grid */}
-      <section className="px-6 md:px-12 pb-24 max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-sm font-medium text-white/40 uppercase tracking-wider">
-            Generated Templates
-          </h2>
-          <span className="text-xs text-white/30">0 results</span>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div
-              key={i}
-              className="aspect-square rounded-xl bg-surface border border-border/60 flex flex-col items-center justify-center gap-2 hover:border-primary/40 transition-colors"
+        <main className="max-w-5xl mx-auto pt-48 px-6 pb-24">
+          {/* Hero */}
+          <div className="mb-32">
+            <h1
+              className="text-7xl md:text-9xl tracking-tight mb-8"
+              style={{ fontFamily: "'EB Garamond', serif" }}
             >
-              <ImageIcon className="w-6 h-6 text-white/15" />
-              <span className="text-[11px] text-white/20">Awaiting input</span>
+              Agentic
+              <br />
+              Intelligence.
+            </h1>
+            <p className="text-xl md:text-2xl text-neutral-500 font-light max-w-xl leading-relaxed">
+              The core architecture for the agentic future. Built for speed,
+              designed for the creator, and scaled for production.
+            </p>
+          </div>
+
+          {/* Features */}
+          <section
+            id="features"
+            className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-32"
+          >
+            <div className="md:col-span-2 border border-neutral-200 p-10 bg-white/50 h-80 flex flex-col justify-end rounded-lg">
+              <h3
+                className="text-3xl mb-3"
+                style={{ fontFamily: "'EB Garamond', serif" }}
+              >
+                Sub-Second Inference
+              </h3>
+              <p className="text-sm text-neutral-500 max-w-sm">
+                Powered by Groq, Weby delivers near-instant response times for
+                complex agent decision-making.
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
-    </div>
+
+            <div className="border border-neutral-200 p-10 bg-white/50 h-80 flex flex-col justify-end rounded-lg">
+              <h3
+                className="text-3xl mb-3"
+                style={{ fontFamily: "'EB Garamond', serif" }}
+              >
+                Modular SDK
+              </h3>
+              <p className="text-sm text-neutral-500">
+                Connectors for every workflow. Plug-and-play integrations with
+                your stack.
+              </p>
+            </div>
+
+            <div className="border border-neutral-200 p-10 bg-white/50 h-80 flex flex-col justify-end rounded-lg">
+              <h3
+                className="text-3xl mb-3"
+                style={{ fontFamily: "'EB Garamond', serif" }}
+              >
+                Vibe Driven
+              </h3>
+              <p className="text-sm text-neutral-500">
+                An interface optimized for the "vibe coding" era—clean,
+                focused, and intuitive.
+              </p>
+            </div>
+
+            <div className="md:col-span-2 border border-neutral-200 p-10 bg-neutral-900 text-white h-80 flex flex-col justify-end rounded-lg">
+              <h3
+                className="text-3xl mb-3 text-neutral-100"
+                style={{ fontFamily: "'EB Garamond', serif" }}
+              >
+                Ready to build?
+              </h3>
+              <p className="text-sm text-neutral-400">
+                Join the closed beta and start architecting your first
+                autonomous agent.
+              </p>
+            </div>
+          </section>
+
+          {/* Waitlist */}
+          <section id="waitlist" className="border-t border-neutral-200 pt-24">
+            <div className="max-w-2xl">
+              <h2
+                className="text-4xl mb-8"
+                style={{ fontFamily: "'EB Garamond', serif" }}
+              >
+                Join the Waitlist
+              </h2>
+              <p className="text-lg text-neutral-600 mb-8 leading-relaxed">
+                We're onboarding new builders in cohorts. Secure your spot in
+                the queue and get priority access to the SDK.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="email@address.com"
+                  className="border border-neutral-200 bg-transparent px-6 py-3 rounded-full w-full sm:w-64 text-sm focus:outline-none focus:border-neutral-400 transition-colors"
+                />
+                <button className="bg-neutral-900 text-white px-8 py-3 rounded-full text-sm font-medium hover:bg-neutral-700 transition-all w-full sm:w-auto">
+                  Request Access
+                </button>
+              </div>
+            </div>
+          </section>
+        </main>
+
+        <footer className="pb-12 text-center text-[10px] uppercase tracking-widest text-neutral-400">
+          © 2026 Weby AI — Agentic Intelligence Infrastructure
+        </footer>
+      </div>
+    </>
   );
 }
