@@ -1,13 +1,16 @@
 import Head from "next/head";
 import { useState } from "react";
+import AuthModal from "../components/AuthModal";
 
 export default function Home() {
   const [email, setEmail] = useState("");
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState(false); // false = login, true = signup
 
   return (
     <>
       <Head>
-        <title>Weby AI | Agentic Intelligence</title>
+        <title>Closed Agent | Agentic Intelligence</title>
         <link
           href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Inter:wght@300;400;600&display=swap"
           rel="stylesheet"
@@ -25,7 +28,7 @@ export default function Home() {
       >
         {/* Nav */}
         <nav className="fixed top-6 left-6 right-6 md:left-1/2 md:-translate-x-1/2 md:w-[600px] backdrop-blur-md bg-white/60 border border-neutral-200/50 rounded-full px-6 py-3 shadow-sm z-50 flex justify-between items-center">
-          <div className="text-lg font-bold tracking-tight">Weby.</div>
+          <div className="text-lg font-bold tracking-tight">Closed.</div>
           <div className="hidden md:flex gap-8 text-[11px] uppercase tracking-[0.2em] font-medium text-neutral-500">
             <a href="#features" className="hover:text-neutral-900 transition-colors">
               Features
@@ -35,10 +38,22 @@ export default function Home() {
             </a>
           </div>
           <div className="flex items-center gap-3">
-            <button className="text-[10px] uppercase tracking-widest hover:text-neutral-500 transition-colors">
+            <button
+              onClick={() => {
+                setAuthMode(false);
+                setAuthOpen(true);
+              }}
+              className="text-[10px] uppercase tracking-widest hover:text-neutral-500 transition-colors"
+            >
               Sign In
             </button>
-            <button className="bg-neutral-900 text-white text-[10px] px-4 py-2 rounded-full uppercase tracking-widest hover:bg-neutral-700 transition-all">
+            <button
+              onClick={() => {
+                setAuthMode(true);
+                setAuthOpen(true);
+              }}
+              className="bg-neutral-900 text-white text-[10px] px-4 py-2 rounded-full uppercase tracking-widest hover:bg-neutral-700 transition-all"
+            >
               Sign Up
             </button>
           </div>
@@ -74,8 +89,8 @@ export default function Home() {
                 Sub-Second Inference
               </h3>
               <p className="text-sm text-neutral-500 max-w-sm">
-                Powered by Groq, Weby delivers near-instant response times for
-                complex agent decision-making.
+                Powered by Groq, Closed Agent delivers near-instant response
+                times for complex agent decision-making.
               </p>
             </div>
 
@@ -149,8 +164,14 @@ export default function Home() {
         </main>
 
         <footer className="pb-12 text-center text-[10px] uppercase tracking-widest text-neutral-400">
-          © 2026 Weby AI — Agentic Intelligence Infrastructure
+          © 2026 Closed Agent — Agentic Intelligence Infrastructure
         </footer>
+
+        <AuthModal
+          isOpen={authOpen}
+          onClose={() => setAuthOpen(false)}
+          startInSignUp={authMode}
+        />
       </div>
     </>
   );
