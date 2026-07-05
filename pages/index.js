@@ -38,11 +38,12 @@ export default function Home() {
             </a>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setAuthMode(false);
-                setAuthOpen(true);
-              }}
+           <button
+  onClick={() => {
+    alert("Sign Up clicked!");
+    setAuthMode(true);
+    setAuthOpen(true);
+  }}
               className="text-[10px] uppercase tracking-widest hover:text-neutral-500 transition-colors"
             >
               Sign In
