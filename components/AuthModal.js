@@ -13,7 +13,7 @@ export default function AuthModal({ isOpen, onClose, startInSignUp = false }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
+  
   useEffect(() => {
     if (isOpen) {
       setIsSignUp(startInSignUp);
