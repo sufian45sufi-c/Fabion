@@ -13,8 +13,14 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Message is required" });
   }
 
+  res.writeHead(200, {
+    "Content-Type": "text/plain; charset=utf-8",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+  });
+
   try {
-    const completion = await groq.chat.completions.create({
+    const stream = await groq.chat.completions.create({
       messages: [
         {
           role: "system",
@@ -24,12 +30,20 @@ export default async function handler(req, res) {
         { role: "user", content: message },
       ],
       model: "llama-3.3-70b-versatile",
+      stream: true,
     });
 
-    const reply = completion.choices[0]?.message?.content || "No response.";
-    res.status(200).json({ reply });
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content || "";
+      if (content) {
+        res.write(content);
+      }
+    }
+
+    res.end();
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Something went wrong calling Groq." });
+    res.write("Error streaming response from the agent.");
+    res.end();
   }
 }
