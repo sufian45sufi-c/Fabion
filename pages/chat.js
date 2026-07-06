@@ -117,8 +117,19 @@ export default function Chat() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: conversationHistory }),
+        body: JSON.stringify({ messages: conversationHistory, userId }),
       });
+
+      if (res.status === 429) {
+        const errData = await res.json();
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { sender: "agent", text: errData.error };
+          return updated;
+        });
+        setIsStreaming(false);
+        return;
+      }
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -145,28 +156,30 @@ export default function Chat() {
     } finally {
       setIsStreaming(false);
 
-      const finalMessages = [
-        ...priorMessages,
-        { sender: "user", text },
-        { sender: "agent", text: accumulated },
-      ];
+      if (accumulated) {
+        const finalMessages = [
+          ...priorMessages,
+          { sender: "user", text },
+          { sender: "agent", text: accumulated },
+        ];
 
-      const existing = chatsData[chatId];
-      const title = isNewChat ? deriveTitle(text) : existing?.title || deriveTitle(text);
-      const createdAt = existing?.createdAt || Date.now();
-      const updatedAt = Date.now();
+        const existing = chatsData[chatId];
+        const title = isNewChat ? deriveTitle(text) : existing?.title || deriveTitle(text);
+        const createdAt = existing?.createdAt || Date.now();
+        const updatedAt = Date.now();
 
-      await set(ref(db, `conversations/${userId}/${chatId}`), {
-        title,
-        messages: finalMessages,
-        createdAt,
-        updatedAt,
-      });
+        await set(ref(db, `conversations/${userId}/${chatId}`), {
+          title,
+          messages: finalMessages,
+          createdAt,
+          updatedAt,
+        });
 
-      setChatsData((prev) => ({
-        ...prev,
-        [chatId]: { title, messages: finalMessages, createdAt, updatedAt },
-      }));
+        setChatsData((prev) => ({
+          ...prev,
+          [chatId]: { title, messages: finalMessages, createdAt, updatedAt },
+        }));
+      }
     }
   };
 
