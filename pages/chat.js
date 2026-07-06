@@ -1,24 +1,34 @@
-    import Head from "next/head";
+import Head from "next/head";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/router";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "../lib/firebaseClient";
+import { ref, get, set } from "firebase/database";
+import { auth, db } from "../lib/firebaseClient";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [checking, setChecking] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
+  const [userId, setUserId] = useState(null);
   const bottomRef = useRef(null);
   const router = useRouter();
 
+  // Auth check + load saved history
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (!user) {
         router.push("/");
-      } else {
-        setChecking(false);
+        return;
       }
+      setUserId(user.uid);
+
+      const convoRef = ref(db, `conversations/${user.uid}`);
+      const snap = await get(convoRef);
+      if (snap.exists()) {
+        setMessages(snap.val().messages || []);
+      }
+      setChecking(false);
     });
     return () => unsubscribe();
   }, [router]);
@@ -27,9 +37,20 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Save whenever messages change (after initial load)
+  useEffect(() => {
+    if (!userId || checking) return;
+    const convoRef = ref(db, `conversations/${userId}`);
+    set(convoRef, { messages, updatedAt: Date.now() });
+  }, [messages, userId, checking]);
+
   const handleLogout = async () => {
     await signOut(auth);
     router.push("/");
+  };
+
+  const handleNewChat = () => {
+    setMessages([]);
   };
 
   const sendMessage = async () => {
@@ -99,6 +120,12 @@ export default function Chat() {
             <div className="text-sm font-medium">
               Model: <span className="text-neutral-500">Agent-Core-4</span>
             </div>
+            <button
+              onClick={handleNewChat}
+              className="text-[10px] uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors"
+            >
+              New chat
+            </button>
             <button
               onClick={handleLogout}
               className="text-[10px] uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors"
