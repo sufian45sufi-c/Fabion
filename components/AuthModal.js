@@ -70,7 +70,7 @@ export default function AuthModal({ isOpen, onClose, startInSignUp = false }) {
           ✕
         </button>
 
-        <div className="mb-10 text-lg font-bold tracking-tight">Closed.</div>
+        <div className="mb-10 text-lg font-bold tracking-tight">Fabian</div>
 
         <h1
           className="text-4xl mb-8"
