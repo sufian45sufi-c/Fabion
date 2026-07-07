@@ -5,12 +5,29 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { ref, get, set, push, remove } from "firebase/database";
 import { auth, db } from "../lib/firebaseClient";
 import { FormattedText, ModelDropdown, ChatListItem } from "../components/ChatWidgets";
-import CodeWorkspace from "../components/CodeWorkspace";
 import DevWorkspace from "../components/DevWorkspace";
 
 function deriveTitle(text) {
   const trimmed = text.trim();
   return trimmed.length > 40 ? trimmed.slice(0, 40) + "…" : trimmed;
+}
+
+function extractCodeBlocks(text) {
+  const blockRegex = /```([a-zA-Z]*)(?::([^\n`]+))?\n?([\s\S]*?)```/g;
+  const blocks = [];
+  let match;
+  let counter = 0;
+  const EXT_MAP = { html: "html", css: "css", javascript: "js", python: "py", json: "json", typescript: "ts" };
+  while ((match = blockRegex.exec(text)) !== null) {
+    const language = (match[1] || "").toLowerCase();
+    const explicitName = match[2]?.trim();
+    const code = match[3].trim();
+    counter += 1;
+    const ext = EXT_MAP[language] || language || "txt";
+    const filename = explicitName || `file${counter}.${ext}`;
+    blocks.push({ filename, code });
+  }
+  return blocks;
 }
 
 const REASONING_START = "\u0002";
@@ -49,7 +66,7 @@ export default function Chat() {
   const [persona, setPersona] = useState("pixel");
   const [memorySummary, setMemorySummary] = useState("");
 
-  const [workspace, setWorkspace] = useState(null);
+  const [workspaceFiles, setWorkspaceFiles] = useState(null);
   const [devWorkspaceOpen, setDevWorkspaceOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -127,14 +144,16 @@ export default function Chat() {
   const handleNewChat = () => {
     setActiveChatId(null);
     setMessages([]);
-    setWorkspace(null);
+    setWorkspaceFiles(null);
+    setDevWorkspaceOpen(false);
     setAttachments([]);
   };
 
   const handleSelectChat = (id) => {
     setActiveChatId(id);
     setMessages(chatsData[id]?.messages || []);
-    setWorkspace(null);
+    setWorkspaceFiles(null);
+    setDevWorkspaceOpen(false);
     setAttachments([]);
   };
 
@@ -156,16 +175,18 @@ export default function Chat() {
     if (activeChatId === id) {
       setActiveChatId(null);
       setMessages([]);
-      setWorkspace(null);
+      setWorkspaceFiles(null);
+      setDevWorkspaceOpen(false);
     }
   };
 
-  const handleOpenWorkspace = (blocks, clickedFilename) => {
+  const handleOpenWorkspace = (blocks) => {
     const filesObj = {};
     blocks.forEach((b) => {
       filesObj[b.filename] = b.code;
     });
-    setWorkspace({ files: filesObj, activeFile: clickedFilename });
+    setWorkspaceFiles(filesObj);
+    setDevWorkspaceOpen(true);
   };
 
   const handleAttachClick = () => {
@@ -339,6 +360,17 @@ export default function Chat() {
           ...prev,
           [chatId]: { title, messages: finalMessages, createdAt, updatedAt },
         }));
+
+        // Auto-open the Dev Workspace whenever the AI's response contains code
+        const codeBlocks = extractCodeBlocks(accumulated);
+        if (codeBlocks.length > 0) {
+          const filesObj = {};
+          codeBlocks.forEach((b) => {
+            filesObj[b.filename] = b.code;
+          });
+          setWorkspaceFiles(filesObj);
+          setDevWorkspaceOpen(true);
+        }
 
         fetch("/api/memory", {
           method: "POST",
@@ -523,7 +555,10 @@ export default function Chat() {
                       msg.sender === "user" ? "text-right" : ""
                     }`}
                   >
-                    <FormattedText text={msg.text} onOpenWorkspace={handleOpenWorkspace} />
+                    <FormattedText
+                      text={msg.text}
+                      onOpenWorkspace={(blocks) => handleOpenWorkspace(blocks)}
+                    />
                     {isStreaming && msg.sender === "agent" && i === messages.length - 1 && (
                       <span className="inline-block w-1.5 h-4 bg-white ml-1 animate-pulse align-middle" />
                     )}
@@ -608,17 +643,9 @@ export default function Chat() {
           </div>
         </main>
 
-        {workspace && !devWorkspaceOpen && (
-          <CodeWorkspace
-            initialFiles={workspace.files}
-            initialActive={workspace.activeFile}
-            onClose={() => setWorkspace(null)}
-          />
-        )}
-
         {devWorkspaceOpen && (
           <DevWorkspace
-            initialFiles={workspace?.files}
+            initialFiles={workspaceFiles}
             onClose={() => setDevWorkspaceOpen(false)}
           />
         )}
