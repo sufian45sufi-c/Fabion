@@ -13,6 +13,10 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToModels = () => {
+    document.getElementById("models")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <>
       <Head>
@@ -34,15 +38,21 @@ export default function Home() {
         >
           <div className="font-bold tracking-tighter text-sm cursor-pointer px-2">FABION</div>
           <div className="hidden md:flex gap-6 text-[10px] uppercase tracking-widest text-[#9A9A9A]">
-            <a href="#models" className="hover:text-white transition-colors duration-300">
+            <button onClick={scrollToModels} className="hover:text-white transition-colors duration-300">
               Models
-            </a>
-            <a href="#features" className="hover:text-white transition-colors duration-300">
+            </button>
+            <button
+              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+              className="hover:text-white transition-colors duration-300"
+            >
               Features
-            </a>
-            <a href="#demo" className="hover:text-white transition-colors duration-300">
+            </button>
+            <button
+              onClick={() => document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" })}
+              className="hover:text-white transition-colors duration-300"
+            >
               Demo
-            </a>
+            </button>
           </div>
           <div className="flex gap-4 items-center">
             <button
@@ -77,12 +87,12 @@ export default function Home() {
             The intelligence that works, not waits. Built for thinking, creating, and executing.
           </p>
           <div className="flex gap-4">
-            
-              href="#models"
+            <button
+              onClick={scrollToModels}
               className="px-8 py-3 bg-white text-black text-[10px] uppercase tracking-widest font-bold rounded-full hover:scale-105 transition-transform"
             >
               Start Building
-            </a>
+            </button>
           </div>
         </section>
 
@@ -99,9 +109,7 @@ export default function Home() {
                 Ultra-fast reasoning for quick, direct answers.
               </p>
               <div className="w-full h-[1px] bg-[#1f1f1f] mb-6" />
-              <button className="text-[10px] uppercase tracking-widest text-[#9A9A9A] hover:text-white transition-colors">
-                Explore →
-              </button>
+              <span className="text-[10px] uppercase tracking-widest text-[#9A9A9A]">Explore →</span>
             </div>
 
             <div className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]">
@@ -112,9 +120,7 @@ export default function Home() {
                 Sharp, structured, and precise — built for code.
               </p>
               <div className="w-full h-[1px] bg-[#1f1f1f] mb-6" />
-              <button className="text-[10px] uppercase tracking-widest text-[#9A9A9A] hover:text-white transition-colors">
-                Explore →
-              </button>
+              <span className="text-[10px] uppercase tracking-widest text-[#9A9A9A]">Explore →</span>
             </div>
 
             <div className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]">
@@ -125,9 +131,7 @@ export default function Home() {
                 Creative, multi-step reasoning for complex problems.
               </p>
               <div className="w-full h-[1px] bg-[#1f1f1f] mb-6" />
-              <button className="text-[10px] uppercase tracking-widest text-[#9A9A9A] hover:text-white transition-colors">
-                Explore →
-              </button>
+              <span className="text-[10px] uppercase tracking-widest text-[#9A9A9A]">Explore →</span>
             </div>
           </div>
         </section>
@@ -182,4 +186,51 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="demo"
+        <section id="demo" className="py-32 px-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl italic mb-12" style={{ fontFamily: "'EB Garamond', serif" }}>
+              Engineered to execute.
+            </h2>
+            <div className="bg-[#0c0c0c] border border-[#1f1f1f] p-8 rounded-2xl font-mono text-sm shadow-2xl overflow-hidden">
+              <div className="flex gap-2 mb-6">
+                <div className="w-3 h-3 rounded-full bg-[#1f1f1f]" />
+                <div className="w-3 h-3 rounded-full bg-[#1f1f1f]" />
+                <div className="w-3 h-3 rounded-full bg-[#1f1f1f]" />
+              </div>
+              <div className="space-y-2 opacity-80">
+                <p className="text-blue-400">$ Fabion — Thread 1.0</p>
+                <p className="text-green-400 mt-4">&gt; Analyzing request...</p>
+                <p className="text-green-400">&gt; Reasoning started...</p>
+                <p className="text-green-400">&gt; Response ready: 0.4s</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="subscribe" className="py-32 px-8 text-center bg-[#0d0d0d]">
+          <h2 className="text-6xl italic mb-8" style={{ fontFamily: "'EB Garamond', serif" }}>
+            Build with Fabion.
+          </h2>
+          <p className="text-[#9A9A9A] max-w-md mx-auto mb-12 text-sm">
+            Sign up to start chatting with Thread, Pixel, and Cell today.
+          </p>
+          <button
+            onClick={() => {
+              setAuthMode(true);
+              setAuthOpen(true);
+            }}
+            className="px-8 py-3 bg-white text-black text-[10px] uppercase tracking-widest font-bold rounded-full hover:scale-105 transition-transform"
+          >
+            Get Started
+          </button>
+        </section>
+
+        <footer className="py-20 border-t border-[#1f1f1f] text-center text-[#444] text-[10px] uppercase tracking-widest">
+          <p>© 2026 Fabion. All rights reserved.</p>
+        </footer>
+
+        <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} startInSignUp={authMode} />
+      </div>
+    </>
+  );
+}
