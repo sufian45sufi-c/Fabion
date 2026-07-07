@@ -12,16 +12,33 @@ function deriveTitle(text) {
   return trimmed.length > 40 ? trimmed.slice(0, 40) + "…" : trimmed;
 }
 
+const REAL_CODE_LANGUAGES = [
+  "javascript", "js", "jsx", "typescript", "ts", "tsx", "python", "py",
+  "html", "css", "json", "java", "c", "cpp", "c++", "csharp", "cs",
+  "go", "rust", "ruby", "php", "sql", "bash", "shell", "sh", "yaml", "yml",
+];
+
 function extractCodeBlocks(text) {
-  const blockRegex = /```([a-zA-Z]*)(?::([^\n`]+))?\n?([\s\S]*?)```/g;
+  const blockRegex = /```([a-zA-Z+]*)(?::([^\n`]+))?\n?([\s\S]*?)```/g;
   const blocks = [];
   let match;
   let counter = 0;
-  const EXT_MAP = { html: "html", css: "css", javascript: "js", python: "py", json: "json", typescript: "ts" };
+  const EXT_MAP = { html: "html", css: "css", javascript: "js", js: "js", python: "py", py: "py", json: "json", typescript: "ts", ts: "ts" };
+
   while ((match = blockRegex.exec(text)) !== null) {
     const language = (match[1] || "").toLowerCase();
     const explicitName = match[2]?.trim();
     const code = match[3].trim();
+
+    const isRealLanguage = REAL_CODE_LANGUAGES.includes(language);
+    const isMultiLine = code.split("\n").length >= 2;
+    const isSubstantial = code.length >= 15;
+
+    // Only treat this as a real, workspace-worthy code block if it's a recognized
+    // language AND has enough substance — filters out the model accidentally
+    // fencing a short plain-text answer.
+    if (!isRealLanguage || !isMultiLine || !isSubstantial) continue;
+
     counter += 1;
     const ext = EXT_MAP[language] || language || "txt";
     const filename = explicitName || `file${counter}.${ext}`;
@@ -361,7 +378,6 @@ export default function Chat() {
           [chatId]: { title, messages: finalMessages, createdAt, updatedAt },
         }));
 
-        // Auto-open the Dev Workspace whenever the AI's response contains code
         const codeBlocks = extractCodeBlocks(accumulated);
         if (codeBlocks.length > 0) {
           const filesObj = {};
