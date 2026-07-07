@@ -41,7 +41,7 @@ export default function AuthModal({ isOpen, onClose, startInSignUp = false }) {
         await signInWithEmailAndPassword(auth, form.email, form.password);
       }
       onClose();
-      router.push("/chat");
+      window.location.href = "/chat";
     } catch (err) {
       setError(err.message);
     } finally {
@@ -58,7 +58,6 @@ export default function AuthModal({ isOpen, onClose, startInSignUp = false }) {
         ← Back
       </button>
 
-      {/* Left: 45% — showcase, centered both axes */}
       <aside className="hidden lg:flex w-[45%] shrink-0 items-center justify-center px-16">
         <div className="w-full max-w-[480px] flex flex-col gap-8">
           <div>
@@ -134,7 +133,6 @@ export default function AuthModal({ isOpen, onClose, startInSignUp = false }) {
         </div>
       </aside>
 
-      {/* Right: 55% — auth form, centered */}
       <main className="w-full lg:w-[55%] shrink-0 flex items-center justify-center px-6">
         <div className="w-full max-w-[400px] p-10 rounded-3xl border border-[#1f1f1f] bg-white/[0.02] backdrop-blur-2xl">
           <h2
