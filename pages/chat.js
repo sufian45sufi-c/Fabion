@@ -14,6 +14,20 @@ function deriveTitle(text) {
 const REASONING_START = "\u0002";
 const REASONING_END = "\u0003";
 
+const READABLE_EXTENSIONS = [
+  "txt", "md", "js", "jsx", "ts", "tsx", "py", "json", "csv", "html", "css",
+  "java", "c", "cpp", "cs", "go", "rb", "php", "sh", "yml", "yaml", "xml", "sql",
+];
+
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
 export default function Chat() {
   const [userId, setUserId] = useState(null);
   const [checking, setChecking] = useState(true);
@@ -25,6 +39,8 @@ export default function Chat() {
 
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [attachments, setAttachments] = useState([]); // [{ name, content }]
+  const [attachError, setAttachError] = useState("");
 
   const [effort, setEffort] = useState("medium");
   const [thinking, setThinking] = useState(false);
@@ -35,6 +51,7 @@ export default function Chat() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const bottomRef = useRef(null);
+  const fileInputRef = useRef(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -108,12 +125,14 @@ export default function Chat() {
     setActiveChatId(null);
     setMessages([]);
     setCanvas(null);
+    setAttachments([]);
   };
 
   const handleSelectChat = (id) => {
     setActiveChatId(id);
     setMessages(chatsData[id]?.messages || []);
     setCanvas(null);
+    setAttachments([]);
   };
 
   const handleRenameChat = async (id, newTitle) => {
@@ -135,6 +154,7 @@ export default function Chat() {
       setActiveChatId(null);
       setMessages([]);
       setCanvas(null);
+      setAttachments([]);
     }
   };
 
@@ -142,9 +162,50 @@ export default function Chat() {
     setCanvas({ code, language: language || "text" });
   };
 
+  const handleAttachClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFilesSelected = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    setAttachError("");
+
+    for (const file of files) {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+
+      if (file.size > 300_000) {
+        setAttachError(`"${file.name}" is too large (max ~300KB for text files).`);
+        continue;
+      }
+      if (!READABLE_EXTENSIONS.includes(ext)) {
+        setAttachError(`"${file.name}" isn't a supported text-based file type.`);
+        continue;
+      }
+
+      try {
+        const content = await readFileAsText(file);
+        setAttachments((prev) => [...prev, { name: file.name, content }]);
+      } catch {
+        setAttachError(`Couldn't read "${file.name}".`);
+      }
+    }
+  };
+
+  const removeAttachment = (name) => {
+    setAttachments((prev) => prev.filter((a) => a.name !== name));
+  };
+
   const sendMessage = async () => {
     const text = input.trim();
-    if (!text) return;
+    if (!text && attachments.length === 0) return;
+
+    const fileBlock = attachments
+      .map((a) => `[FILE: ${a.name}]\n${a.content}\n[/FILE]`)
+      .join("\n\n");
+
+    const fullText = fileBlock ? `${fileBlock}\n\n${text}`.trim() : text;
+    const displayText = text || `Attached: ${attachments.map((a) => a.name).join(", ")}`;
 
     const priorMessages = messages;
     let chatId = activeChatId;
@@ -157,10 +218,12 @@ export default function Chat() {
     }
 
     setInput("");
+    const attachedNames = attachments.map((a) => a.name);
+    setAttachments([]);
     setIsStreaming(true);
     setMessages((prev) => [
       ...prev,
-      { sender: "user", text },
+      { sender: "user", text: displayText, attachedFiles: attachedNames },
       { sender: "agent", text: "", reasoning: "" },
     ]);
 
@@ -168,10 +231,13 @@ export default function Chat() {
     let reasoningAccumulated = "";
 
     try {
-      const conversationHistory = [...priorMessages, { sender: "user", text }].map((m) => ({
-        role: m.sender === "user" ? "user" : "assistant",
-        content: m.text,
-      }));
+      const conversationHistory = [
+        ...priorMessages.map((m) => ({
+          role: m.sender === "user" ? "user" : "assistant",
+          content: m.text,
+        })),
+        { role: "user", content: fullText },
+      ];
 
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -247,12 +313,12 @@ export default function Chat() {
       if (accumulated) {
         const finalMessages = [
           ...priorMessages,
-          { sender: "user", text },
+          { sender: "user", text: displayText, attachedFiles: attachedNames },
           { sender: "agent", text: accumulated, reasoning: reasoningAccumulated },
         ];
 
         const existing = chatsData[chatId];
-        const title = isNewChat ? deriveTitle(text) : existing?.title || deriveTitle(text);
+        const title = isNewChat ? deriveTitle(displayText) : existing?.title || deriveTitle(displayText);
         const createdAt = existing?.createdAt || Date.now();
         const updatedAt = Date.now();
 
@@ -272,7 +338,7 @@ export default function Chat() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            userText: text,
+            userText: displayText,
             agentText: accumulated,
             existingSummary: memorySummary,
           }),
@@ -431,6 +497,19 @@ export default function Chat() {
                     {msg.sender}
                   </div>
 
+                  {msg.sender === "user" && msg.attachedFiles && msg.attachedFiles.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2 justify-end">
+                      {msg.attachedFiles.map((name, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[10px] bg-zinc-800 border border-zinc-700 rounded-full px-3 py-1 text-zinc-300"
+                        >
+                          📎 {name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
                   {msg.sender === "agent" && msg.reasoning && (
                     <details className="mb-2 text-xs text-zinc-500 border border-zinc-800 rounded-lg px-3 py-2">
                       <summary className="cursor-pointer uppercase tracking-widest text-[10px]">
@@ -459,6 +538,29 @@ export default function Chat() {
 
           <div className="p-6 shrink-0">
             <div className="max-w-3xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-3 shadow-2xl flex flex-col gap-3">
+              {attachments.length > 0 && (
+                <div className="flex flex-wrap gap-2 px-2">
+                  {attachments.map((a) => (
+                    <span
+                      key={a.name}
+                      className="flex items-center gap-2 text-[11px] bg-zinc-800 border border-zinc-700 rounded-full pl-3 pr-2 py-1 text-zinc-300"
+                    >
+                      📎 {a.name}
+                      <button
+                        onClick={() => removeAttachment(a.name)}
+                        className="text-zinc-500 hover:text-white transition-colors"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {attachError && (
+                <div className="px-2 text-[11px] text-red-400">{attachError}</div>
+              )}
+
               <textarea
                 rows={2}
                 value={input}
@@ -470,7 +572,19 @@ export default function Chat() {
 
               <div className="flex items-center justify-between px-2 pb-1">
                 <div className="flex items-center gap-2">
-                  <button className="p-2 bg-zinc-800 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-700 transition">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    onChange={handleFilesSelected}
+                    className="hidden"
+                    accept={READABLE_EXTENSIONS.map((e) => `.${e}`).join(",")}
+                  />
+                  <button
+                    onClick={handleAttachClick}
+                    className="p-2 bg-zinc-800 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-700 transition"
+                    title="Attach a file"
+                  >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M12 5v14M5 12h14" />
                     </svg>
