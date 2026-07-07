@@ -32,6 +32,7 @@ export default function Chat() {
   const [memorySummary, setMemorySummary] = useState("");
 
   const [canvas, setCanvas] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const bottomRef = useRef(null);
   const router = useRouter();
@@ -292,7 +293,10 @@ export default function Chat() {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") sendMessage();
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   };
 
   if (checking) return null;
@@ -300,152 +304,190 @@ export default function Chat() {
   return (
     <>
       <Head>
-        <title>Chat | Fabian</title>
+        <title>Chat | Fabion</title>
         <link
-          href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Inter:wght@300;400;600&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital@0;1&display=swap"
           rel="stylesheet"
         />
       </Head>
 
-      <div
-        className="flex h-screen bg-white text-neutral-900"
-        style={{ fontFamily: "'Inter', sans-serif" }}
-      >
-        <aside className="w-72 border-r border-neutral-200 flex flex-col h-screen shrink-0">
-          <div className="p-6 border-b border-neutral-200">
-            <div
-              className="text-lg font-bold tracking-tight mb-4"
-              style={{ fontFamily: "'EB Garamond', serif" }}
-            >
-              Fabian.
-            </div>
-            <button
-              onClick={handleNewChat}
-              className="w-full bg-neutral-900 text-white text-xs uppercase tracking-widest py-2.5 rounded-full hover:bg-neutral-700 transition-all"
-            >
-              + New chat
-            </button>
+      <div className="h-screen bg-zinc-950 text-white flex overflow-hidden" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <aside
+          className={`${
+            sidebarOpen ? "w-64" : "w-16"
+          } border-r border-zinc-800 flex flex-col h-full bg-zinc-950 p-4 transition-all duration-300 relative shrink-0`}
+        >
+          <div className="mb-8 px-2 text-xl tracking-tight flex items-center gap-4" style={{ fontFamily: "'Playfair Display', serif" }}>
+            {sidebarOpen ? "Fabion." : "F."}
           </div>
 
-          <div className="p-4">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search chats..."
-              className="w-full border border-neutral-200 bg-transparent px-4 py-2 rounded-full text-sm focus:outline-none focus:border-neutral-400 transition-colors"
-            />
-          </div>
+          {sidebarOpen ? (
+            <>
+              <button
+                onClick={handleNewChat}
+                className="w-full bg-white text-black text-sm font-medium py-2.5 px-4 rounded-full hover:bg-zinc-200 transition-all mb-6 flex items-center justify-center gap-2"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                New Chat
+              </button>
 
-          <div className="flex-1 overflow-y-auto px-2 pb-4">
-            {chatList.length === 0 && (
-              <div className="text-xs text-neutral-400 px-4 py-2">
-                {searchQuery ? "No chats found" : "No chats yet"}
+              <div className="relative mb-6">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.35-4.35" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search..."
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-full py-2 pl-9 pr-4 text-xs placeholder:text-zinc-600 focus:outline-none focus:border-zinc-500 transition-colors"
+                />
               </div>
-            )}
-            {chatList.map((chat) => (
-              <ChatListItem
-                key={chat.id}
-                chat={chat}
-                isActive={chat.id === activeChatId}
-                onSelect={handleSelectChat}
-                onRename={handleRenameChat}
-                onDelete={handleDeleteChat}
-              />
-            ))}
-          </div>
 
-          <div className="p-4 border-t border-neutral-200 space-y-1">
+              <div className="flex-1 overflow-y-auto">
+                {chatList.length === 0 && (
+                  <div className="text-zinc-600 text-xs px-2 italic">
+                    {searchQuery ? "No chats found" : "No chats yet"}
+                  </div>
+                )}
+                {chatList.map((chat) => (
+                  <ChatListItem
+                    key={chat.id}
+                    chat={chat}
+                    isActive={chat.id === activeChatId}
+                    onSelect={handleSelectChat}
+                    onRename={handleRenameChat}
+                    onDelete={handleDeleteChat}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-6 mb-6">
+              <button
+                onClick={handleNewChat}
+                className="text-zinc-400 hover:text-white transition-colors"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          <div className="mt-auto border-t border-zinc-800 pt-4 space-y-4 px-2 flex flex-col">
             <button
               onClick={() => router.push("/settings")}
-              className="w-full text-left text-[10px] uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors py-1"
+              className={`flex items-center gap-3 text-zinc-500 hover:text-white transition-colors ${
+                sidebarOpen ? "" : "justify-center"
+              }`}
             >
-              Settings
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              {sidebarOpen && <span className="text-xs">Settings</span>}
             </button>
             <button
               onClick={handleLogout}
-              className="w-full text-left text-[10px] uppercase tracking-widest text-neutral-400 hover:text-neutral-900 transition-colors py-1"
+              className={`flex items-center gap-3 text-zinc-500 hover:text-white transition-colors ${
+                sidebarOpen ? "" : "justify-center"
+              }`}
             >
-              Log out
+              <div className="w-5 h-5 rounded-full bg-zinc-700 shrink-0" />
+              {sidebarOpen && <span className="text-xs">Log out</span>}
             </button>
           </div>
         </aside>
 
-        <div className="flex-1 flex flex-col h-screen">
-          <header className="shrink-0 p-6 flex justify-between items-center border-b border-neutral-100">
-            <div className="text-sm font-medium">
-              Fabian <span className="text-neutral-400">Agent</span>
+        <main className="flex-1 flex flex-col h-full relative overflow-hidden">
+          <header className="h-16 flex items-center px-4 border-b border-zinc-800 shrink-0">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="mr-4 p-2 text-zinc-400 hover:text-white transition"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            </button>
+            <div className="text-sm text-zinc-400">
+              Fabion <span className="text-zinc-600 ml-1">Agent</span>
             </div>
           </header>
 
-          <main
+          <div
             className={`flex-1 overflow-y-auto px-6 py-8 flex flex-col items-center ${
               messages.length === 0 ? "justify-center" : ""
             }`}
           >
             <div className="max-w-3xl w-full space-y-8">
               {messages.length === 0 && (
-                <div className="text-center">
-                  <h2
-                    className="text-5xl mb-12"
-                    style={{ fontFamily: "'EB Garamond', serif" }}
-                  >
-                    How can I help you today?
-                  </h2>
-                </div>
+                <h1
+                  className="text-4xl text-zinc-200 opacity-90 text-center"
+                  style={{ fontFamily: "'Playfair Display', serif" }}
+                >
+                  How can I help you today?
+                </h1>
               )}
 
               {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`max-w-2xl ${msg.sender === "user" ? "ml-auto" : ""}`}
-                >
-                  <div className="text-[10px] uppercase tracking-widest text-neutral-400 mb-1">
+                <div key={i} className={`max-w-2xl ${msg.sender === "user" ? "ml-auto" : ""}`}>
+                  <div className="text-[10px] uppercase tracking-widest text-zinc-600 mb-1">
                     {msg.sender}
                   </div>
 
                   {msg.sender === "agent" && msg.reasoning && (
-                    <details className="mb-2 text-xs text-neutral-400 border border-neutral-200 rounded-lg px-3 py-2">
+                    <details className="mb-2 text-xs text-zinc-500 border border-zinc-800 rounded-lg px-3 py-2">
                       <summary className="cursor-pointer uppercase tracking-widest text-[10px]">
                         Thinking
                       </summary>
-                      <div className="mt-2 whitespace-pre-wrap italic">
-                        {msg.reasoning}
-                      </div>
+                      <div className="mt-2 whitespace-pre-wrap italic">{msg.reasoning}</div>
                     </details>
                   )}
 
                   <div
-                    className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                    className={`text-sm leading-relaxed whitespace-pre-wrap text-zinc-200 ${
                       msg.sender === "user" ? "text-right" : ""
                     }`}
                   >
                     <FormattedText text={msg.text} onOpenCanvas={handleOpenCanvas} />
-                    {isStreaming &&
-                      msg.sender === "agent" &&
-                      i === messages.length - 1 && (
-                        <span className="inline-block w-1.5 h-4 bg-neutral-900 ml-1 animate-pulse align-middle" />
-                      )}
+                    {isStreaming && msg.sender === "agent" && i === messages.length - 1 && (
+                      <span className="inline-block w-1.5 h-4 bg-white ml-1 animate-pulse align-middle" />
+                    )}
                   </div>
                 </div>
               ))}
 
               <div ref={bottomRef} />
             </div>
-          </main>
+          </div>
 
-          <div className="shrink-0 px-6 pb-6">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white border border-neutral-200 shadow-xl rounded-2xl p-2">
-                <input
-                  type="text"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type a message..."
-                  className="w-full bg-transparent px-4 py-3 focus:outline-none text-sm"
-                />
-                <div className="flex items-center justify-between px-2 pb-1">
+          <div className="p-6 shrink-0">
+            <div className="max-w-3xl mx-auto bg-zinc-900 border border-zinc-800 rounded-3xl p-3 shadow-2xl flex flex-col gap-3">
+              <textarea
+                rows={2}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Type a message..."
+                className="w-full bg-transparent border-none focus:outline-none text-sm text-white placeholder:text-zinc-600 resize-none px-2 pt-2"
+              />
+
+              <div className="flex items-center justify-between px-2 pb-1">
+                <div className="flex items-center gap-2">
+                  <button className="p-2 bg-zinc-800 rounded-full text-zinc-400 hover:text-white hover:bg-zinc-700 transition">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 5v14M5 12h14" />
+                    </svg>
+                  </button>
+
                   <ModelDropdown
                     persona={persona}
                     setPersona={setPersona}
@@ -454,25 +496,21 @@ export default function Chat() {
                     thinking={thinking}
                     setThinking={setThinking}
                   />
-                  <button
-                    onClick={sendMessage}
-                    disabled={isStreaming}
-                    className="bg-neutral-900 text-white p-2.5 rounded-full hover:bg-neutral-700 transition-all disabled:opacity-50"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 12h14M12 5l7 7-7 7"
-                      ></path>
-                    </svg>
-                  </button>
                 </div>
+
+                <button
+                  onClick={sendMessage}
+                  disabled={isStreaming}
+                  className="bg-white text-black p-2 rounded-full hover:bg-zinc-200 transition disabled:opacity-50"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        </main>
 
         {canvas && (
           <CanvasPanel
