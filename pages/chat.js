@@ -6,6 +6,7 @@ import { ref, get, set, push, remove } from "firebase/database";
 import { auth, db } from "../lib/firebaseClient";
 import { FormattedText, ModelDropdown, ChatListItem } from "../components/ChatWidgets";
 import CodeWorkspace from "../components/CodeWorkspace";
+import DevWorkspace from "../components/DevWorkspace";
 
 function deriveTitle(text) {
   const trimmed = text.trim();
@@ -48,7 +49,8 @@ export default function Chat() {
   const [persona, setPersona] = useState("pixel");
   const [memorySummary, setMemorySummary] = useState("");
 
-  const [workspace, setWorkspace] = useState(null); // { files: {name: code}, activeFile }
+  const [workspace, setWorkspace] = useState(null);
+  const [devWorkspaceOpen, setDevWorkspaceOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const bottomRef = useRef(null);
@@ -469,9 +471,15 @@ export default function Chat() {
                 <path d="M3 12h18M3 6h18M3 18h18" />
               </svg>
             </button>
-            <div className="text-sm text-zinc-400">
+            <div className="text-sm text-zinc-400 flex-1">
               Fabion <span className="text-zinc-600 ml-1">Agent</span>
             </div>
+            <button
+              onClick={() => setDevWorkspaceOpen(!devWorkspaceOpen)}
+              className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 rounded-full px-3 py-1.5"
+            >
+              {devWorkspaceOpen ? "Close Workspace" : "Dev Workspace"}
+            </button>
           </header>
 
           <div
@@ -600,11 +608,18 @@ export default function Chat() {
           </div>
         </main>
 
-        {workspace && (
+        {workspace && !devWorkspaceOpen && (
           <CodeWorkspace
             initialFiles={workspace.files}
             initialActive={workspace.activeFile}
             onClose={() => setWorkspace(null)}
+          />
+        )}
+
+        {devWorkspaceOpen && (
+          <DevWorkspace
+            initialFiles={workspace?.files}
+            onClose={() => setDevWorkspaceOpen(false)}
           />
         )}
       </div>
