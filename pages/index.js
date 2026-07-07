@@ -34,15 +34,15 @@ export default function Home() {
         >
           <div className="font-bold tracking-tighter text-sm cursor-pointer px-2">FABION</div>
           <div className="hidden md:flex gap-6 text-[10px] uppercase tracking-widest text-[#9A9A9A]">
-            {["Models", "Features", "Demo"].map((item) => (
-              
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="hover:text-white transition-colors duration-300"
-              >
-                {item}
-              </a>
-            ))}
+            <a href="#models" className="hover:text-white transition-colors duration-300">
+              Models
+            </a>
+            <a href="#features" className="hover:text-white transition-colors duration-300">
+              Features
+            </a>
+            <a href="#demo" className="hover:text-white transition-colors duration-300">
+              Demo
+            </a>
           </div>
           <div className="flex gap-4 items-center">
             <button
@@ -91,25 +91,44 @@ export default function Home() {
             Three models. One intelligence.
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: "Thread", desc: "Ultra-fast reasoning for quick, direct answers." },
-              { name: "Pixel", desc: "Sharp, structured, and precise — built for code." },
-              { name: "Cell", desc: "Creative, multi-step reasoning for complex problems." },
-            ].map((model) => (
-              <div
-                key={model.name}
-                className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]"
-              >
-                <h3 className="text-2xl mb-4" style={{ fontFamily: "'EB Garamond', serif" }}>
-                  {model.name}
-                </h3>
-                <p className="text-[#9A9A9A] text-sm leading-relaxed mb-8">{model.desc}</p>
-                <div className="w-full h-[1px] bg-[#1f1f1f] mb-6" />
-                <button className="text-[10px] uppercase tracking-widest text-[#9A9A9A] hover:text-white transition-colors">
-                  Explore →
-                </button>
-              </div>
-            ))}
+            <div className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]">
+              <h3 className="text-2xl mb-4" style={{ fontFamily: "'EB Garamond', serif" }}>
+                Thread
+              </h3>
+              <p className="text-[#9A9A9A] text-sm leading-relaxed mb-8">
+                Ultra-fast reasoning for quick, direct answers.
+              </p>
+              <div className="w-full h-[1px] bg-[#1f1f1f] mb-6" />
+              <button className="text-[10px] uppercase tracking-widest text-[#9A9A9A] hover:text-white transition-colors">
+                Explore →
+              </button>
+            </div>
+
+            <div className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]">
+              <h3 className="text-2xl mb-4" style={{ fontFamily: "'EB Garamond', serif" }}>
+                Pixel
+              </h3>
+              <p className="text-[#9A9A9A] text-sm leading-relaxed mb-8">
+                Sharp, structured, and precise — built for code.
+              </p>
+              <div className="w-full h-[1px] bg-[#1f1f1f] mb-6" />
+              <button className="text-[10px] uppercase tracking-widest text-[#9A9A9A] hover:text-white transition-colors">
+                Explore →
+              </button>
+            </div>
+
+            <div className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]">
+              <h3 className="text-2xl mb-4" style={{ fontFamily: "'EB Garamond', serif" }}>
+                Cell
+              </h3>
+              <p className="text-[#9A9A9A] text-sm leading-relaxed mb-8">
+                Creative, multi-step reasoning for complex problems.
+              </p>
+              <div className="w-full h-[1px] bg-[#1f1f1f] mb-6" />
+              <button className="text-[10px] uppercase tracking-widest text-[#9A9A9A] hover:text-white transition-colors">
+                Explore →
+              </button>
+            </div>
           </div>
         </section>
 
@@ -118,63 +137,49 @@ export default function Home() {
             Designed to disappear.
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-12">
-            {["Reasoning", "Code", "Research", "Automation", "Memory", "Multi-chat"].map((feat, i) => (
-              <div key={i} className="space-y-4">
-                <div className="w-10 h-10 border border-[#1f1f1f] rounded-full flex items-center justify-center">
-                  <span className="text-xs text-[#9A9A9A]">0{i + 1}</span>
-                </div>
-                <h4 className="text-lg font-medium">{feat}</h4>
-                <p className="text-[#9A9A9A] text-sm">Engineered for high-throughput intelligent processing.</p>
+            <div className="space-y-4">
+              <div className="w-10 h-10 border border-[#1f1f1f] rounded-full flex items-center justify-center">
+                <span className="text-xs text-[#9A9A9A]">01</span>
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section id="demo" className="py-32 px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl italic mb-12" style={{ fontFamily: "'EB Garamond', serif" }}>
-              Engineered to execute.
-            </h2>
-            <div className="bg-[#0c0c0c] border border-[#1f1f1f] p-8 rounded-2xl font-mono text-sm shadow-2xl overflow-hidden">
-              <div className="flex gap-2 mb-6">
-                <div className="w-3 h-3 rounded-full bg-[#1f1f1f]" />
-                <div className="w-3 h-3 rounded-full bg-[#1f1f1f]" />
-                <div className="w-3 h-3 rounded-full bg-[#1f1f1f]" />
+              <h4 className="text-lg font-medium">Reasoning</h4>
+              <p className="text-[#9A9A9A] text-sm">Engineered for high-throughput intelligent processing.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="w-10 h-10 border border-[#1f1f1f] rounded-full flex items-center justify-center">
+                <span className="text-xs text-[#9A9A9A]">02</span>
               </div>
-              <div className="space-y-2 opacity-80">
-                <p className="text-blue-400">$ Fabion — Thread 1.0</p>
-                <p className="text-green-400 mt-4">&gt; Analyzing request...</p>
-                <p className="text-green-400">&gt; Reasoning started...</p>
-                <p className="text-green-400">&gt; Response ready: 0.4s</p>
+              <h4 className="text-lg font-medium">Code</h4>
+              <p className="text-[#9A9A9A] text-sm">Engineered for high-throughput intelligent processing.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="w-10 h-10 border border-[#1f1f1f] rounded-full flex items-center justify-center">
+                <span className="text-xs text-[#9A9A9A]">03</span>
               </div>
+              <h4 className="text-lg font-medium">Research</h4>
+              <p className="text-[#9A9A9A] text-sm">Engineered for high-throughput intelligent processing.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="w-10 h-10 border border-[#1f1f1f] rounded-full flex items-center justify-center">
+                <span className="text-xs text-[#9A9A9A]">04</span>
+              </div>
+              <h4 className="text-lg font-medium">Automation</h4>
+              <p className="text-[#9A9A9A] text-sm">Engineered for high-throughput intelligent processing.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="w-10 h-10 border border-[#1f1f1f] rounded-full flex items-center justify-center">
+                <span className="text-xs text-[#9A9A9A]">05</span>
+              </div>
+              <h4 className="text-lg font-medium">Memory</h4>
+              <p className="text-[#9A9A9A] text-sm">Engineered for high-throughput intelligent processing.</p>
+            </div>
+            <div className="space-y-4">
+              <div className="w-10 h-10 border border-[#1f1f1f] rounded-full flex items-center justify-center">
+                <span className="text-xs text-[#9A9A9A]">06</span>
+              </div>
+              <h4 className="text-lg font-medium">Multi-chat</h4>
+              <p className="text-[#9A9A9A] text-sm">Engineered for high-throughput intelligent processing.</p>
             </div>
           </div>
         </section>
 
-        <section id="subscribe" className="py-32 px-8 text-center bg-[#0d0d0d]">
-          <h2 className="text-6xl italic mb-8" style={{ fontFamily: "'EB Garamond', serif" }}>
-            Build with Fabion.
-          </h2>
-          <p className="text-[#9A9A9A] max-w-md mx-auto mb-12 text-sm">
-            Sign up to start chatting with Thread, Pixel, and Cell today.
-          </p>
-          <button
-            onClick={() => {
-              setAuthMode(true);
-              setAuthOpen(true);
-            }}
-            className="px-8 py-3 bg-white text-black text-[10px] uppercase tracking-widest font-bold rounded-full hover:scale-105 transition-transform"
-          >
-            Get Started
-          </button>
-        </section>
-
-        <footer className="py-20 border-t border-[#1f1f1f] text-center text-[#444] text-[10px] uppercase tracking-widest">
-          <p>© 2026 Fabion. All rights reserved.</p>
-        </footer>
-
-        <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} startInSignUp={authMode} />
-      </div>
-    </>
-  );
-}
+        <section id="demo"
