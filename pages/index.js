@@ -2,73 +2,6 @@ import Head from "next/head";
 import { useState, useEffect } from "react";
 import AuthModal from "../components/AuthModal";
 
-function HeroScene() {
-  const stars = [
-    [40, 90], [150, 40], [300, 118], [370, 260], [560, 100], [660, 130],
-    [780, 60], [975, 130], [1210, 90], [1280, 260], [1470, 90], [1550, 195],
-    [65, 340], [500, 300], [900, 385], [1100, 245], [225, 200], [1330, 340],
-  ];
-
-  return (
-    <svg
-      viewBox="0 0 1600 900"
-      preserveAspectRatio="xMidYMid slice"
-      className="absolute inset-0 w-full h-full"
-    >
-      <defs>
-        <pattern id="dots" width="6" height="6" patternUnits="userSpaceOnUse">
-          <circle cx="1.2" cy="1.2" r="1.1" fill="white" />
-        </pattern>
-        <pattern id="dotsSparse" width="10" height="10" patternUnits="userSpaceOnUse">
-          <circle cx="1.4" cy="1.4" r="1" fill="white" opacity="0.6" />
-        </pattern>
-      </defs>
-
-      <rect width="1600" height="900" fill="#000000" />
-
-      {stars.map(([cx, cy], i) => (
-        <circle key={i} cx={cx} cy={cy} r={i % 3 === 0 ? 1.6 : 1} fill="white" opacity="0.8" />
-      ))}
-
-      {/* Moon */}
-      <circle cx="480" cy="205" r="45" fill="url(#dots)" />
-
-      {/* Clouds */}
-      <ellipse cx="260" cy="245" rx="90" ry="18" fill="url(#dotsSparse)" />
-      <ellipse cx="1160" cy="280" rx="110" ry="20" fill="url(#dotsSparse)" />
-
-      {/* Back mountain range */}
-      <polygon
-        points="0,620 200,340 420,470 620,300 900,560 1150,380 1350,540 1600,430 1600,900 0,900"
-        fill="url(#dotsSparse)"
-        opacity="0.5"
-      />
-
-      {/* Front mountain range */}
-      <polygon
-        points="0,720 260,330 430,520 640,280 820,560 1600,650 1600,900 0,900"
-        fill="url(#dots)"
-      />
-
-      {/* Pine trees, right side */}
-      {[
-        [1080, 610, 90],
-        [1160, 560, 130],
-        [1250, 520, 170],
-        [1340, 480, 210],
-        [1430, 440, 250],
-        [1520, 460, 220],
-      ].map(([x, baseY, h], i) => (
-        <polygon
-          key={i}
-          points={`${x},${baseY - h} ${x - h * 0.28},${baseY} ${x + h * 0.28},${baseY}`}
-          fill="url(#dots)"
-        />
-      ))}
-    </svg>
-  );
-}
-
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -143,8 +76,16 @@ export default function Home() {
           </div>
         </nav>
 
-        <section id="hero" className="relative min-h-screen flex flex-col justify-center items-center px-6 overflow-hidden">
-          <HeroScene />
+        <section
+          id="hero"
+          className="relative min-h-screen flex flex-col justify-center items-center px-6 overflow-hidden"
+          style={{
+            backgroundImage: "url('/images/hero-bg.webp')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
           <div className="relative z-10 flex flex-col items-center pt-20">
             <h1
               className="text-[80px] md:text-[140px] italic leading-[0.9] mb-8 text-center"
