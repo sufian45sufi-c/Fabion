@@ -34,9 +34,6 @@ function extractCodeBlocks(text) {
     const isMultiLine = code.split("\n").length >= 2;
     const isSubstantial = code.length >= 15;
 
-    // Only treat this as a real, workspace-worthy code block if it's a recognized
-    // language AND has enough substance — filters out the model accidentally
-    // fencing a short plain-text answer.
     if (!isRealLanguage || !isMultiLine || !isSubstantial) continue;
 
     counter += 1;
@@ -500,6 +497,15 @@ export default function Chat() {
           )}
 
           <div className="mt-auto border-t border-zinc-800 pt-4 space-y-4 px-2 flex flex-col">
+            <button
+              onClick={() => router.push("/mind")}
+              className={`flex items-center gap-3 text-zinc-500 hover:text-white transition-colors ${
+                sidebarOpen ? "" : "justify-center"
+              }`}
+            >
+              <div className="w-5 h-5 rounded-full border border-zinc-600 shrink-0" />
+              {sidebarOpen && <span className="text-xs">Fabion Mind</span>}
+            </button>
             <button
               onClick={handleLogout}
               className={`flex items-center gap-3 text-zinc-500 hover:text-white transition-colors ${
