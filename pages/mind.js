@@ -1,9 +1,12 @@
 import Head from "next/head";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter } from "next/router";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
 import { ref, get } from "firebase/database";
 import { auth, db } from "../lib/firebaseClient";
+
+const TYPE_SIZE = { project: 6, chat: 4, file: 3, person: 5 };
+const TYPE_LABEL = { chat: "Chats", file: "Files", person: "Profile", project: "Projects" };
 
 function UniverseView({ nodes, onSelect }) {
   const canvasRef = useRef(null);
@@ -32,7 +35,6 @@ function UniverseView({ nodes, onSelect }) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       const positions = positionsRef.current;
 
-      // faint background stars
       ctx.fillStyle = "rgba(255,255,255,0.15)";
       for (let i = 0; i < 60; i++) {
         const x = (i * 137.5) % canvas.width;
@@ -40,7 +42,6 @@ function UniverseView({ nodes, onSelect }) {
         ctx.fillRect(x, y, 1, 1);
       }
 
-      // connecting lines between nearby nodes
       ctx.strokeStyle = "rgba(255,255,255,0.08)";
       for (let i = 0; i < positions.length; i++) {
         for (let j = i + 1; j < positions.length; j++) {
@@ -62,7 +63,7 @@ function UniverseView({ nodes, onSelect }) {
         if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
         if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
-        const size = nodes[i].type === "project" ? 6 : nodes[i].type === "chat" ? 3.5 : 2.5;
+        const size = TYPE_SIZE[nodes[i].type] || 3;
         ctx.beginPath();
         ctx.fillStyle = "#ffffff";
         ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
@@ -103,7 +104,7 @@ function ExplorerView({ nodes, onSelect }) {
   const categories = useMemo(() => {
     const groups = {};
     nodes.forEach((n) => {
-      const cat = n.type === "chat" ? "Chats" : n.type === "project" ? "Projects" : "Notes";
+      const cat = TYPE_LABEL[n.type] || "Other";
       if (!groups[cat]) groups[cat] = [];
       groups[cat].push(n);
     });
@@ -122,7 +123,10 @@ function ExplorerView({ nodes, onSelect }) {
                 onClick={() => onSelect(item)}
                 className="text-left p-4 border border-zinc-800 rounded-xl hover:border-zinc-600 transition-colors bg-zinc-950"
               >
-                <div className="text-sm font-medium mb-1 truncate">{item.title}</div>
+                <div className="text-sm font-medium mb-1 truncate">
+                  {item.type === "file" && "📎 "}
+                  {item.title}
+                </div>
                 <div className="text-xs text-zinc-500 truncate">{item.summary}</div>
                 <div className="text-[10px] text-zinc-600 mt-2">
                   {new Date(item.date).toLocaleDateString()}
@@ -159,22 +163,19 @@ function TimelineView({ nodes, onSelect }) {
           <h3 className="text-sm text-zinc-400 mb-4">{day}</h3>
           <div className="border-l border-zinc-800 pl-6 space-y-4">
             {items.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onSelect(item)}
-                className="block text-left w-full relative"
-              >
+              <button key={item.id} onClick={() => onSelect(item)} className="block text-left w-full relative">
                 <div className="absolute -left-[29px] top-1.5 w-2 h-2 rounded-full bg-white" />
-                <div className="text-sm">{item.title}</div>
+                <div className="text-sm">
+                  {item.type === "file" && "📎 "}
+                  {item.title}
+                </div>
                 <div className="text-xs text-zinc-500">{item.summary}</div>
               </button>
             ))}
           </div>
         </div>
       ))}
-      {nodes.length === 0 && (
-        <div className="text-zinc-600 text-sm italic">No history yet.</div>
-      )}
+      {nodes.length === 0 && <div className="text-zinc-600 text-sm italic">No history yet.</div>}
     </div>
   );
 }
@@ -194,11 +195,11 @@ function DetailPanel({ node, onClose, router }) {
           </div>
           <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors">✕</button>
         </div>
-        <p className="text-sm text-zinc-400 leading-relaxed mb-4">{node.summary}</p>
+        <p className="text-sm text-zinc-400 leading-relaxed mb-4 whitespace-pre-wrap">{node.summary}</p>
         <div className="text-xs text-zinc-600 mb-4">{new Date(node.date).toLocaleString()}</div>
         {node.chatId && (
           <button
-            onClick={() => router.push("/chat")}
+            onClick={() => router.push(`/chat?open=${node.chatId}`)}
             className="text-xs uppercase tracking-widest bg-white text-black px-4 py-2 rounded-full hover:bg-zinc-200 transition-colors"
           >
             Open conversation
@@ -224,23 +225,58 @@ export default function Mind() {
         return;
       }
 
-      const convosRef = ref(db, `conversations/${user.uid}`);
-      const snap = await get(convosRef);
       const builtNodes = [];
 
-      if (snap.exists()) {
-        const data = snap.val();
+      // Chats + Files (extracted from attachments inside each chat)
+      const convosSnap = await get(ref(db, `conversations/${user.uid}`));
+      if (convosSnap.exists()) {
+        const data = convosSnap.val();
+        const seenFiles = new Set();
+
         Object.entries(data).forEach(([chatId, convo]) => {
           const firstUserMsg = (convo.messages || []).find((m) => m.sender === "user");
           builtNodes.push({
-            id: chatId,
+            id: `chat-${chatId}`,
             chatId,
             type: "chat",
             title: convo.title || "Untitled chat",
             summary: firstUserMsg?.text?.slice(0, 100) || "No messages yet",
             date: convo.updatedAt || convo.createdAt || Date.now(),
           });
+
+          (convo.messages || []).forEach((m) => {
+            if (m.attachedFiles && m.attachedFiles.length > 0) {
+              m.attachedFiles.forEach((filename) => {
+                const key = `${chatId}-${filename}`;
+                if (seenFiles.has(key)) return;
+                seenFiles.add(key);
+                builtNodes.push({
+                  id: `file-${key}`,
+                  chatId,
+                  type: "file",
+                  title: filename,
+                  summary: `Shared in "${convo.title || "a chat"}"`,
+                  date: convo.updatedAt || convo.createdAt || Date.now(),
+                });
+              });
+            }
+          });
         });
+      }
+
+      // Profile node — built from cross-chat memory
+      const memSnap = await get(ref(db, `memory/${user.uid}`));
+      if (memSnap.exists()) {
+        const mem = memSnap.val();
+        if (mem.summary && mem.summary.trim()) {
+          builtNodes.push({
+            id: "profile",
+            type: "person",
+            title: "You",
+            summary: mem.summary,
+            date: mem.updatedAt || Date.now(),
+          });
+        }
       }
 
       setNodes(builtNodes);
