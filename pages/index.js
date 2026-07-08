@@ -111,6 +111,11 @@ export default function Home() {
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             <div className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]">
+              <img
+                src="/thread-logo.png"
+                alt="Thread 1.0"
+                className="w-16 h-16 object-contain mb-6"
+              />
               <h3 className="text-2xl mb-4" style={{ fontFamily: "'EB Garamond', serif" }}>
                 Thread
               </h3>
@@ -122,6 +127,9 @@ export default function Home() {
             </div>
 
             <div className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]">
+              <div className="w-16 h-16 mb-6 rounded-full border border-[#1f1f1f] flex items-center justify-center">
+                <span className="text-[10px] text-[#9A9A9A]">Pixel</span>
+              </div>
               <h3 className="text-2xl mb-4" style={{ fontFamily: "'EB Garamond', serif" }}>
                 Pixel
               </h3>
@@ -133,6 +141,9 @@ export default function Home() {
             </div>
 
             <div className="p-8 border border-[#1f1f1f] rounded-2xl hover:border-white/20 transition-all bg-[#0e0e0e]">
+              <div className="w-16 h-16 mb-6 rounded-full border border-[#1f1f1f] flex items-center justify-center">
+                <span className="text-[10px] text-[#9A9A9A]">Cell</span>
+              </div>
               <h3 className="text-2xl mb-4" style={{ fontFamily: "'EB Garamond', serif" }}>
                 Cell
               </h3>
