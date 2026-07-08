@@ -2,16 +2,25 @@ import Head from "next/head";
 import { useState, useEffect } from "react";
 import AuthModal from "../components/AuthModal";
 
-function ModelCard({ logo, name, description }) {
+function ModelRow({ logo, name, description, reverse }) {
   return (
-    <div className="flex items-center gap-6">
-      <img src={logo} alt={name} className="w-40 h-40 object-contain shrink-0" />
-      <div className="h-24 w-px bg-[#333] shrink-0" />
-      <div className="flex-1 p-6 border border-[#1f1f1f] rounded-2xl bg-[#0e0e0e] hover:border-white/20 transition-all">
-        <h3 className="text-2xl mb-3" style={{ fontFamily: "'EB Garamond', serif" }}>
+    <div
+      className={`flex flex-col md:flex-row items-center gap-10 md:gap-16 ${
+        reverse ? "md:flex-row-reverse" : ""
+      }`}
+    >
+      <div className="flex-1 flex justify-center">
+        <img
+          src={logo}
+          alt={name}
+          className="w-full max-w-md h-auto object-contain"
+        />
+      </div>
+      <div className="flex-1">
+        <h3 className="text-5xl mb-6" style={{ fontFamily: "'EB Garamond', serif" }}>
           {name}
         </h3>
-        <p className="text-[#9A9A9A] text-sm leading-relaxed">{description}</p>
+        <p className="text-[#9A9A9A] text-lg leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -120,25 +129,26 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="models" className="py-32 px-8 max-w-4xl mx-auto border-t border-[#1f1f1f]">
-          <h2 className="text-4xl italic mb-20" style={{ fontFamily: "'EB Garamond', serif" }}>
+        <section id="models" className="py-32 px-8 max-w-6xl mx-auto border-t border-[#1f1f1f]">
+          <h2 className="text-4xl italic mb-24" style={{ fontFamily: "'EB Garamond', serif" }}>
             Three models. One intelligence.
           </h2>
-          <div className="flex flex-col gap-10">
-            <ModelCard
+          <div className="flex flex-col gap-32">
+            <ModelRow
               logo="/thread-logo.png"
               name="Thread"
-              description="Ultra-fast reasoning for quick, direct answers."
+              description="Ultra-fast reasoning for quick, direct answers. Thread is built for speed above all — when you need something now, not a lecture."
             />
-            <ModelCard
+            <ModelRow
               logo="/pixel-logo.png"
               name="Pixel"
-              description="Sharp, structured, and precise — built for code."
+              description="Sharp, structured, and precise — built for code. Pixel thinks like a senior engineer across the full stack, backend and frontend alike."
+              reverse
             />
-            <ModelCard
+            <ModelRow
               logo="/cell-logo.png"
               name="Cell"
-              description="Creative, multi-step reasoning for complex problems."
+              description="Creative, multi-step reasoning for complex problems. Cell breaks down ambiguity, weighs tradeoffs, and thinks things through properly."
             />
           </div>
         </section>
