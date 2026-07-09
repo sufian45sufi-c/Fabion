@@ -14,12 +14,12 @@
     "react-dom": "18.3.1",
     "lucide-react": "0.408.0",
     "firebase": "10.13.0",
-   "@monaco-editor/react": "^4.6.0",
+    "@monaco-editor/react": "^4.6.0",
     "@webcontainer/api": "^1.1.10",
     "@xterm/addon-fit": "^0.8.0",
-    "xterm": "^5.3.0"
+    "xterm": "^5.3.0",
     "gsap": "3.12.5",
-"framer-motion": "11.3.19",
+    "framer-motion": "11.3.19",
     "groq-sdk": "0.5.0"
   },
   "devDependencies": {
