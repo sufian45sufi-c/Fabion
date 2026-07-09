@@ -5,7 +5,6 @@ import { Terminal } from 'xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import 'xterm/css/xterm.css';
 
-// Ensure WebContainer only boots once to prevent memory leaks
 let webcontainerInstance = null;
 
 export default function DevWorkspace() {
@@ -14,39 +13,15 @@ export default function DevWorkspace() {
   const [previewUrl, setPreviewUrl] = useState('');
   const [activeFile, setActiveFile] = useState('index.js');
   
-  // Default files to load into the WebContainer
   const [files, setFiles] = useState({
     'package.json': {
       file: {
-        contents: `
-{
-  "name": "fabion-preview",
-  "type": "module",
-  "dependencies": {
-    "express": "latest"
-  },
-  "scripts": {
-    "start": "node index.js"
-  }
-}
-        `.trim(),
+        contents: `{\n  "name": "fabion-preview",\n  "type": "module",\n  "dependencies": {\n    "express": "latest"\n  },\n  "scripts": {\n    "start": "node index.js"\n  }\n}`
       },
     },
     'index.js': {
       file: {
-        contents: `
-import express from 'express';
-const app = express();
-const port = 3111;
-
-app.get('/', (req, res) => {
-  res.send('Hello from Fabion WebContainers!');
-});
-
-app.listen(port, () => {
-  console.log(\`App is live at http://localhost:\${port}\`);
-});
-        `.trim(),
+        contents: `import express from 'express';\nconst app = express();\nconst port = 3111;\n\napp.get('/', (req, res) => {\n  res.send('Hello from Fabion WebContainers!');\n});\n\napp.listen(port, () => {\n  console.log('App is live at http://localhost:' + port);\n});`
       },
     },
   });
@@ -56,7 +31,6 @@ app.listen(port, () => {
     let fitAddon;
 
     const initWorkspace = async () => {
-      // 1. Initialize Terminal (White Theme for your aesthetic)
       if (terminalRef.current && !term) {
         term = new Terminal({
           convertEol: true,
@@ -75,7 +49,6 @@ app.listen(port, () => {
         term.writeln('Booting Fabion Workspace Environment...');
       }
 
-      // 2. Boot WebContainer
       try {
         if (!webcontainerInstance) {
           webcontainerInstance = await WebContainer.boot();
@@ -84,15 +57,13 @@ app.listen(port, () => {
         
         setBooting(false);
         term.writeln('\x1b[32mEnvironment ready.\x1b[0m');
-        term.writeln('Type "npm install" then "npm run start" to boot the server.');
+        term.writeln('Type "npm install" then "npm start" to boot the server.');
 
-        // Listen for the server opening a port
         webcontainerInstance.on('server-ready', (port, url) => {
-          term.writeln(`\x1b[34mServer ready on port ${port}\x1b[0m`);
+          term.writeln('\x1b[34mServer ready on port ' + port + '\x1b[0m');
           setPreviewUrl(url);
         });
 
-        // 3. Connect Terminal to WebContainer shell
         const shellProcess = await webcontainerInstance.spawn('jsh');
         
         shellProcess.output.pipeTo(
@@ -109,13 +80,12 @@ app.listen(port, () => {
         });
 
       } catch (error) {
-        if (term) term.writeln(`\x1b[31mError booting container: ${error.message}\x1b[0m`);
+        if (term) term.writeln('\x1b[31mError booting container: ' + error.message + '\x1b[0m');
       }
     };
 
     initWorkspace();
 
-    // Resize terminal on window resize
     const handleResize = () => {
       if (fitAddon) fitAddon.fit();
     };
@@ -125,16 +95,14 @@ app.listen(port, () => {
       window.removeEventListener('resize', handleResize);
       if (term) term.dispose();
     };
-  }, []); // Empty dependency array ensures this runs once
+  }, []);
 
   const handleEditorChange = async (value) => {
-    // Update React state
     setFiles((prev) => ({
       ...prev,
       [activeFile]: { file: { contents: value } },
     }));
 
-    // Update actual WebContainer file system
     if (webcontainerInstance) {
       await webcontainerInstance.fs.writeFile(activeFile, value);
     }
@@ -143,7 +111,7 @@ app.listen(port, () => {
   return (
     <div className="flex h-[80vh] w-full bg-white text-black border border-gray-200 font-sans shadow-sm">
       
-      {/* 1. File Explorer (Left Panel) */}
+      {/* 1. File Explorer */}
       <div className="w-48 border-r border-gray-200 bg-gray-50 flex flex-col">
         <div className="p-3 text-xs font-bold uppercase tracking-widest text-gray-500 border-b border-gray-200">
           Explorer
@@ -153,11 +121,11 @@ app.listen(port, () => {
             <button
               key={fileName}
               onClick={() => setActiveFile(fileName)}
-              className={\`w-full text-left px-4 py-1.5 text-sm transition-colors \${
+              className={`w-full text-left px-4 py-1.5 text-sm transition-colors ${
                 activeFile === fileName 
                   ? 'bg-gray-200 font-medium text-black' 
                   : 'text-gray-600 hover:bg-gray-100'
-              }\`}
+              }`}
             >
               {fileName}
             </button>
@@ -165,9 +133,8 @@ app.listen(port, () => {
         </div>
       </div>
 
-      {/* 2. Editor & Terminal (Center Panel) */}
+      {/* 2. Editor & Terminal */}
       <div className="flex-1 flex flex-col min-w-0 border-r border-gray-200">
-        {/* Monaco Editor */}
         <div className="flex-1 relative">
           <div className="absolute top-0 w-full p-2 bg-gray-50 border-b border-gray-200 text-xs text-gray-500 z-10 flex justify-between items-center">
             <span>{activeFile}</span>
@@ -192,7 +159,6 @@ app.listen(port, () => {
           </div>
         </div>
 
-        {/* Xterm.js Terminal */}
         <div className="h-1/3 border-t border-gray-200 bg-white flex flex-col">
           <div className="px-3 py-1 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500">
             Terminal
@@ -201,7 +167,7 @@ app.listen(port, () => {
         </div>
       </div>
 
-      {/* 3. Live Preview (Right Panel) */}
+      {/* 3. Live Preview */}
       <div className="w-1/3 bg-gray-50 flex flex-col">
         <div className="p-2 border-b border-gray-200 bg-gray-100 flex items-center justify-between">
           <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Live Preview</div>
