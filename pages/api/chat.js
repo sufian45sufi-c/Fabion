@@ -12,7 +12,6 @@ export default async function handler(req, res) {
   const { messages, activeModel = 'Thread', userMemory = '' } = req.body;
 
   // 1. Core Operating Rules (Applied to all models)
-  // This fixes the "weird" memory issue and the code block formatting issue.
   const coreRules = `
 CRITICAL MEMORY RULE: You have access to the user's background (${userMemory}), but treat it as SILENT context. DO NOT bring up past projects, hobbies, or profile data unless the user's immediate prompt explicitly asks about them. Focus 100% on the immediate question asked.
 CRITICAL FORMATTING RULE: Speak in normal, conversational text. DO NOT wrap regular text in code blocks. ONLY use triple backticks (\`\`\`) for actual programming code, terminal commands, or JSON data. Always include the language identifier (e.g., \`\`\`javascript).
@@ -35,10 +34,8 @@ When asked to build or design something, output fully functional, production-rea
 You are strictly analytical, calculating, and direct. You solve complex logic, math, and architectural problems. You speak in concise, structured formats (bullet points, numbered steps) and avoid unnecessary conversational filler.`
   };
 
-  // Select the active persona, defaulting to Thread
   const activePersona = personas[activeModel] || personas['Thread'];
 
-  // Combine the core rules with the active persona
   const systemMessage = {
     role: 'system',
     content: `${activePersona}\n\n${coreRules}`,
@@ -54,18 +51,19 @@ You are strictly analytical, calculating, and direct. You solve complex logic, m
       stream: true,
     });
 
-    res.setHeader('Content-Type', 'text/event-stream');
+    // Set headers for simple raw chunk streaming
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
+    // Send pure raw text tokens directly down the pipe
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content || '';
       if (content) {
-        res.write(`data: ${JSON.stringify({ text: content })}\n\n`);
+        res.write(content);
       }
     }
     
-    res.write('data: [DONE]\n\n');
     res.end();
 
   } catch (error) {
