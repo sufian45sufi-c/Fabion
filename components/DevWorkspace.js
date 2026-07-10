@@ -18,9 +18,7 @@ const DEFAULT_FILES = {
       contents: `<!DOCTYPE html>\n<html>\n<head><title>Fabion Workspace</title></head>\n<body>\n  <h1>Hello from Fabion</h1>\n  <script type="module" src="/main.js"></script>\n</body>\n</html>`,
     },
   },
-  "main.js": {
-    file: { contents: `console.log("Fabion workspace ready.");` },
-  },
+  "main.js": { file: { contents: `console.log("Fabion workspace ready.");` } },
 };
 
 const EXT_LANGUAGE_MAP = {
@@ -33,7 +31,6 @@ function languageFromFilename(name) {
   return EXT_LANGUAGE_MAP[ext] || "plaintext";
 }
 
-// Converts a flat { "src/App.js": "..." } map into a nested tree for rendering + WebContainer mount
 function buildTree(fileMap) {
   const tree = {};
   Object.entries(fileMap).forEach(([path, contents]) => {
@@ -147,61 +144,80 @@ function FileTree({ fileMap, activeFile, onSelect, onCreate, onRename, onDelete 
   );
 }
 
+// Module-level singleton — survives across DevWorkspace mount/unmount within the same tab,
+// since WebContainers only allow ONE boot per browser tab, ever.
+let globalContainerPromise = null;
+let globalShellWriter = null;
+let globalTerminalListeners = new Set();
+let globalPreviewUrl = "";
+let globalPreviewListeners = new Set();
+
+async function getOrBootContainer(initialFiles) {
+  if (globalContainerPromise) return globalContainerPromise;
+
+  globalContainerPromise = (async () => {
+    const { WebContainer } = await import("@webcontainer/api");
+    const container = await WebContainer.boot();
+
+    const initialFlat = initialFiles && Object.keys(initialFiles).length > 0 ? initialFiles : flattenTree(DEFAULT_FILES);
+    const treeToMount = buildTree(initialFlat);
+    await container.mount(treeToMount);
+
+    container.on("server-ready", (port, url) => {
+      globalPreviewUrl = url;
+      globalPreviewListeners.forEach((fn) => fn(url));
+    });
+
+    const shellProcess = await container.spawn("jsh", { terminal: { cols: 80, rows: 24 } });
+
+    shellProcess.output.pipeTo(
+      new WritableStream({
+        write(data) {
+          globalTerminalListeners.forEach((fn) => fn(data));
+        },
+      })
+    );
+
+    globalShellWriter = shellProcess.input.getWriter();
+
+    return { container, initialFlat };
+  })();
+
+  return globalContainerPromise;
+}
+
 export default function DevWorkspace({ initialFiles, onClose }) {
   const [status, setStatus] = useState("booting");
   const [errorMsg, setErrorMsg] = useState("");
   const [fileMap, setFileMap] = useState({});
   const [activeFile, setActiveFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
+  const [previewUrl, setPreviewUrl] = useState(globalPreviewUrl);
   const [terminalLines, setTerminalLines] = useState([]);
   const [terminalInput, setTerminalInput] = useState("");
   const [terminalCollapsed, setTerminalCollapsed] = useState(false);
 
   const containerRef = useRef(null);
-  const writerRef = useRef(null);
-  const bootedRef = useRef(false);
   const terminalEndRef = useRef(null);
 
   useEffect(() => {
-    if (bootedRef.current) return;
-    bootedRef.current = true;
     let disposed = false;
 
-    async function boot() {
+    async function connect() {
       try {
-        const { WebContainer } = await import("@webcontainer/api");
-        const container = await WebContainer.boot();
+        const { container, initialFlat } = await getOrBootContainer(initialFiles);
         if (disposed) return;
         containerRef.current = container;
 
-        const initialFlat =
-          initialFiles && Object.keys(initialFiles).length > 0 ? initialFiles : flattenTree(DEFAULT_FILES);
-        const treeToMount = buildTree(initialFlat);
-
-        await container.mount(treeToMount);
         setFileMap(initialFlat);
-        setActiveFile(Object.keys(initialFlat)[0]);
-
-        container.on("server-ready", (port, url) => setPreviewUrl(url));
-
-        const shellProcess = await container.spawn("jsh", { terminal: { cols: 80, rows: 24 } });
-
-        shellProcess.output.pipeTo(
-          new WritableStream({
-            write(data) {
-              setTerminalLines((prev) => [...prev.slice(-500), data]);
-            },
-          })
-        );
-
-        const input = shellProcess.input.getWriter();
-        writerRef.current = input;
-
+        setActiveFile((prev) => prev || Object.keys(initialFlat)[0]);
+        setPreviewUrl(globalPreviewUrl);
         setStatus("ready");
       } catch (err) {
         console.error(err);
         setErrorMsg(
-          err?.message?.includes("SharedArrayBuffer")
+          err?.message?.includes("single WebContainer")
+            ? "A workspace is already running in this tab. Close other tabs using it, or refresh the page."
+            : err?.message?.includes("SharedArrayBuffer")
             ? "This browser blocked the required cross-origin isolation headers. Try a hard refresh, or use Chrome/Edge."
             : err?.message || "Failed to boot the workspace."
         );
@@ -209,9 +225,18 @@ export default function DevWorkspace({ initialFiles, onClose }) {
       }
     }
 
-    boot();
+    connect();
+
+    const terminalListener = (data) => setTerminalLines((prev) => [...prev.slice(-500), data]);
+    const previewListener = (url) => setPreviewUrl(url);
+    globalTerminalListeners.add(terminalListener);
+    globalPreviewListeners.add(previewListener);
+
     return () => {
       disposed = true;
+      globalTerminalListeners.delete(terminalListener);
+      globalPreviewListeners.delete(previewListener);
+      // Intentionally NOT tearing down the container itself — it must stay alive for the tab's lifetime.
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -221,8 +246,8 @@ export default function DevWorkspace({ initialFiles, onClose }) {
   }, [terminalLines]);
 
   const runCommand = useCallback((cmd) => {
-    if (!writerRef.current) return;
-    writerRef.current.write(cmd + "\n");
+    if (!globalShellWriter) return;
+    globalShellWriter.write(cmd + "\n");
   }, []);
 
   const handleTerminalSubmit = (e) => {
@@ -235,7 +260,6 @@ export default function DevWorkspace({ initialFiles, onClose }) {
   const syncFile = async (path, contents) => {
     if (!containerRef.current) return;
     try {
-      // Ensure parent directories exist before writing
       const parts = path.split("/");
       if (parts.length > 1) {
         const dir = parts.slice(0, -1).join("/");
