@@ -74,16 +74,21 @@ export function FormattedText({ text, images, onOpenWorkspace }) {
     <div className="fabion-markdown">
       {images && images.length > 0 && (
         <div className="grid grid-cols-2 gap-2 mb-4">
-          {images.slice(0, 4).map((img, i) => (
-            <img
-              key={i}
-              src={typeof img === "string" ? img : img.url}
-              alt=""
-              className="w-full h-32 object-cover rounded-lg border border-zinc-800"
-              loading="lazy"
-              onError={(e) => (e.target.style.display = "none")}
-            />
-          ))}
+          {images.slice(0, 4).map((img, i) => {
+            const src = typeof img === "string" ? img : img?.url || img?.src || "";
+            if (!src) return null;
+            return (
+              <div key={i} className="w-full h-32 rounded-lg border border-zinc-800 overflow-hidden bg-zinc-900">
+                <img
+                  src={src}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            );
+          })}
         </div>
       )}
       <ReactMarkdown
