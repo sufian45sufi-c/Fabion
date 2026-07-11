@@ -73,20 +73,21 @@ const PERSONA_PROMPTS = {
 For casual or conversational questions: be quick, warm, and natural — like a sharp friend who gives you the real answer immediately, no fluff.
 For anything code-related: switch immediately into precise, technical, no-nonsense mode.
 Never open with "Sure!" or "Great question." Start directly with the answer either way.
-Use web search when the question depends on current or fast-changing information.`,
+Use web search when the question depends on current or fast-changing information. Use the browser_action tool when the user wants you to actually visit, navigate, or interact with a specific website live.`,
 
   pixel: `You are Pixel 1.0, Fabion's senior full-stack engineering specialist, with deep expertise across backend and frontend.
 
 For casual questions: be genuinely friendly and natural.
 For coding tasks, switch fully into technical mode: correct, idiomatic, production-quality code, declared language in fenced blocks, brief approach before code and tradeoffs after, no emojis or casual tone while working on code.
-Use web search for current library versions or recent changes you're not fully certain about.`,
+Use web search for current library versions or recent changes you're not fully certain about.
+Use the browser_action tool when the user wants you to actually visit or interact with a live website (e.g. testing a deployed page, checking a specific site's current layout).`,
 
   cell: `You are Cell 1.0, Fabion's creative and multi-step reasoning model.
 
 For casual, creative, or open-ended questions: be warm, thoughtful, and genuinely engaged.
 For complex requests, work through the problem in clear stages, considering more than one angle before committing.
 If the conversation shifts into code, tone down the casualness and be precise instead.
-Use web search for research-heavy or current-events questions.`,
+Use web search for research-heavy or current-events questions. Use the browser_action tool when the user wants you to actually browse or interact with a live website.`,
 };
 
 const tools = [
@@ -104,6 +105,28 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "browser_action",
+      description: "Control a real, live web browser session. Use this to navigate to specific pages, click elements, fill forms, or interact with a website directly, rather than just searching. The browser view is visible to the user in real time.",
+      parameters: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            enum: ["navigate", "click", "type", "scroll"],
+            description: "The browser action to perform.",
+          },
+          url: { type: "string", description: "URL to navigate to (required for 'navigate')." },
+          selector: { type: "string", description: "CSS selector for the element (required for 'click' and 'type')." },
+          text: { type: "string", description: "Text to type (required for 'type')." },
+          amount: { type: "number", description: "Pixels to scroll (optional for 'scroll', default 500)." },
+        },
+        required: ["type"],
+      },
+    },
+  },
 ];
 
 async function performWebSearch(query, req) {
@@ -116,6 +139,17 @@ async function performWebSearch(query, req) {
   });
   const data = await res.json();
   return { results: data.results || [], images: data.images || [] };
+}
+
+async function performBrowserAction(args, userId, req) {
+  const protocol = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers.host;
+  const res = await fetch(`${protocol}://${host}/api/browser-session`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId: userId, action: args }),
+  });
+  return res.json();
 }
 
 export default async function handler(req, res) {
@@ -191,6 +225,19 @@ export default async function handler(req, res) {
           if (images.length > 0) {
             res.write("\u0006" + JSON.stringify(images) + "\u0007");
           }
+        }
+
+        if (call.function.name === "browser_action") {
+          const args = JSON.parse(call.function.arguments || "{}");
+          const browserData = await performBrowserAction(args, userId, req);
+
+          workingMessages.push({
+            role: "tool",
+            tool_call_id: call.id,
+            content: browserData.error
+              ? `Browser action failed: ${browserData.error}`
+              : `Navigated to ${browserData.url}. Page title: "${browserData.title}". Visible text: ${browserData.text?.slice(0, 500)}`,
+          });
         }
       }
 
