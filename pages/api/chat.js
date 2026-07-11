@@ -228,6 +228,7 @@ export default async function handler(req, res) {
         }
 
         if (call.function.name === "browser_action") {
+          res.write("\u0008");
           const args = JSON.parse(call.function.arguments || "{}");
           const browserData = await performBrowserAction(args, userId, req);
 
