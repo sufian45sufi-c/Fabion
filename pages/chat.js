@@ -6,6 +6,7 @@ import { ref, get, set, push, remove } from "firebase/database";
 import { auth, db } from "../lib/firebaseClient";
 import { FormattedText, ModelDropdown, ChatListItem } from "../components/ChatWidgets";
 import DevWorkspace from "../components/DevWorkspace";
+import AgentBrowser from "../components/AgentBrowser";
 
 function deriveTitle(text) {
   const trimmed = text.trim();
@@ -50,6 +51,7 @@ const SEARCH_START = "\u0004";
 const SEARCH_END = "\u0005";
 const IMAGE_START = "\u0006";
 const IMAGE_END = "\u0007";
+const BROWSER_OPEN_SIGNAL = "\u0008";
 
 const READABLE_EXTENSIONS = [
   "txt", "md", "js", "jsx", "ts", "tsx", "py", "json", "csv", "html", "css",
@@ -86,6 +88,7 @@ export default function Chat() {
 
   const [workspaceFiles, setWorkspaceFiles] = useState(null);
   const [devWorkspaceOpen, setDevWorkspaceOpen] = useState(false);
+  const [browserOpen, setBrowserOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const bottomRef = useRef(null);
@@ -172,6 +175,7 @@ export default function Chat() {
     setMessages([]);
     setWorkspaceFiles(null);
     setDevWorkspaceOpen(false);
+    setBrowserOpen(false);
     setAttachments([]);
   };
 
@@ -180,6 +184,7 @@ export default function Chat() {
     setMessages(chatsData[id]?.messages || []);
     setWorkspaceFiles(null);
     setDevWorkspaceOpen(false);
+    setBrowserOpen(false);
     setAttachments([]);
   };
 
@@ -203,6 +208,7 @@ export default function Chat() {
       setMessages([]);
       setWorkspaceFiles(null);
       setDevWorkspaceOpen(false);
+      setBrowserOpen(false);
     }
   };
 
@@ -213,6 +219,17 @@ export default function Chat() {
     });
     setWorkspaceFiles(filesObj);
     setDevWorkspaceOpen(true);
+    setBrowserOpen(false);
+  };
+
+  const handleToggleDevWorkspace = () => {
+    setDevWorkspaceOpen(!devWorkspaceOpen);
+    setBrowserOpen(false);
+  };
+
+  const handleToggleBrowser = () => {
+    setBrowserOpen(!browserOpen);
+    setDevWorkspaceOpen(false);
   };
 
   const handleAttachClick = () => {
@@ -351,6 +368,9 @@ export default function Chat() {
               const parsed = JSON.parse(imageBuffer);
               searchImages = [...searchImages, ...parsed];
             } catch {}
+          } else if (ch === BROWSER_OPEN_SIGNAL) {
+            setBrowserOpen(true);
+            setDevWorkspaceOpen(false);
           } else if (inImageBlock) {
             imageBuffer += ch;
           } else if (inReasoning) {
@@ -416,6 +436,7 @@ export default function Chat() {
           });
           setWorkspaceFiles(filesObj);
           setDevWorkspaceOpen(true);
+          setBrowserOpen(false);
         }
 
         fetch("/api/memory", {
@@ -552,8 +573,8 @@ export default function Chat() {
         </aside>
 
         <main className="flex-1 flex flex-col h-full relative overflow-hidden">
-          <header className="h-16 flex items-center px-4 border-b border-zinc-800 shrink-0">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mr-4 p-2 text-zinc-400 hover:text-white transition">
+          <header className="h-16 flex items-center px-4 border-b border-zinc-800 shrink-0 gap-2">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="mr-2 p-2 text-zinc-400 hover:text-white transition">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M3 12h18M3 6h18M3 18h18" />
               </svg>
@@ -562,7 +583,13 @@ export default function Chat() {
               Fabion <span className="text-zinc-600 ml-1">Agent</span>
             </div>
             <button
-              onClick={() => setDevWorkspaceOpen(!devWorkspaceOpen)}
+              onClick={handleToggleBrowser}
+              className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 rounded-full px-3 py-1.5"
+            >
+              {browserOpen ? "Close Browser" : "Chromium"}
+            </button>
+            <button
+              onClick={handleToggleDevWorkspace}
               className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 rounded-full px-3 py-1.5"
             >
               {devWorkspaceOpen ? "Close Workspace" : "Dev Workspace"}
@@ -709,6 +736,10 @@ export default function Chat() {
 
         {devWorkspaceOpen && (
           <DevWorkspace initialFiles={workspaceFiles} onClose={() => setDevWorkspaceOpen(false)} />
+        )}
+
+        {browserOpen && (
+          <AgentBrowser sessionId={userId} onClose={() => setBrowserOpen(false)} />
         )}
       </div>
     </>
