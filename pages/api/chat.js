@@ -43,7 +43,7 @@ const EFFORT_MODEL_MAP = {
 };
 
 const PERSONA_MODEL_OVERRIDE = {
-  kimi: "moonshotai/kimi-k2-instruct-0905",
+  kimi: "moonshotai/kimi-k2-instruct",
 };
 
 function getCurrentDateContext() {
@@ -66,7 +66,7 @@ Formatting rules:
 
 const TOOL_USE_RULES = `
 Tool use rules — follow strictly:
-- If the user asks you to visit, browse, open, navigate to, click on, fill in, or interact with a specific website, "chromium", or "the browser", you MUST call the browser_action function directly.
+- If the user asks you to visit, browse, open, navigate to, click on, fill in, or interact with a specific website, "SearchFab", or "the browser", you MUST call the browser_action function directly.
 - If the user asks about current events, prices, recent news, or anything time-sensitive, you MUST call web_search directly.
 - For casual conversation, greetings, or questions you already know confidently, do NOT call any tool — just respond directly.
 `;
@@ -138,7 +138,7 @@ async function performBrowserAction(args, userId, req) {
 
 function detectsBrowserIntent(text) {
   const t = text.toLowerCase();
-  return /\b(open chromium|open the browser|navigate to|go to (the )?website|browse to|visit (the )?site|click on|fill in|open google|open youtube)\b/.test(t);
+  return /\b(open searchfab|open the browser|navigate to|go to (the )?website|browse to|visit (the )?site|click on|fill in|open google|open youtube)\b/.test(t);
 }
 
 export default async function handler(req, res) {
@@ -186,7 +186,6 @@ export default async function handler(req, res) {
   let workingMessages = [{ role: "system", content: systemContent }, ...messages];
 
   try {
-    // Tool-detection pass — isolated so a failure here doesn't kill the whole response
     try {
       const firstPass = await groq.chat.completions.create({
         messages: workingMessages,
@@ -241,8 +240,6 @@ export default async function handler(req, res) {
         res.write("\u0005");
       }
     } catch (toolErr) {
-      // Tool-calling pass failed (e.g. this model doesn't support tools well, or a transient error) —
-      // log it, but continue to a plain response instead of failing the whole request.
       console.error("Tool-calling pass failed, falling back to plain response:", toolErr);
     }
 
