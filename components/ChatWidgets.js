@@ -144,8 +144,8 @@ const PERSONAS = [
   { value: "thread", label: "Thread 1.0", desc: "Ultra-fast, direct answers" },
   { value: "pixel", label: "Pixel 1.0", desc: "Sharp, structured, code-focused" },
   { value: "cell", label: "Cell 1.0", desc: "Creative, multi-step reasoning" },
+  { value: "kimi", label: "Kimi K2", desc: "Agentic coding, strong tool use" },
 ];
-
 const EFFORTS = [
   { value: "low", label: "Low" },
   { value: "medium", label: "Medium", isDefault: true },
