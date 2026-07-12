@@ -7,9 +7,7 @@ export const config = {
   },
 };
 
-// In-memory session store: sandboxId -> { sandbox, createdAt }
-// Note: resets on cold start, same limitation as the rate limiter.
-const activeSandboxes = new Map();
+const activeSandboxes = global.__fabionSandboxes || (global.__fabionSandboxes = new Map());
 
 async function getOrCreateSandbox(sessionId) {
   const existing = activeSandboxes.get(sessionId);
@@ -17,10 +15,14 @@ async function getOrCreateSandbox(sessionId) {
 
   const sandbox = await Sandbox.create({ timeout: 300_000 });
 
-  await sandbox.runCommand({
+  const install = await sandbox.runCommand({
     cmd: "npm",
     args: ["install", "-g", "playwright-core"],
   });
+
+  if (install.exitCode !== 0) {
+    throw new Error("Failed to install playwright-core in sandbox: " + (await install.stderr()));
+  }
 
   activeSandboxes.set(sessionId, { sandbox, createdAt: Date.now() });
   return sandbox;
@@ -82,22 +84,23 @@ export default async function handler(req, res) {
     const proc = await sandbox.runCommand({
       cmd: "node",
       args: ["browser-action.js", JSON.stringify(action)],
-      stdout: "pipe",
-      stderr: "pipe",
     });
 
-    let output = "";
-    for await (const chunk of proc.stdout) {
-      output += chunk.toString();
-    }
+    const output = await proc.stdout();
+    const errorOutput = await proc.stderr();
 
-    let errorOutput = "";
-    for await (const chunk of proc.stderr) {
-      errorOutput += chunk.toString();
+    if (proc.exitCode !== 0) {
+      return res.status(200).json({ error: `Command failed (exit ${proc.exitCode}): ${errorOutput.slice(0, 500)}` });
     }
 
     const lastLine = output.trim().split("\n").pop();
-    const result = JSON.parse(lastLine);
+
+    let result;
+    try {
+      result = JSON.parse(lastLine);
+    } catch {
+      return res.status(200).json({ error: "Unexpected browser output: " + output.slice(0, 500) });
+    }
 
     if (result.error) {
       return res.status(200).json({ error: result.error, stderr: errorOutput });
