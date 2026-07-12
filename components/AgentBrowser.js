@@ -60,7 +60,7 @@ export default function AgentBrowser({ sessionId, onClose }) {
     <div className="w-[55%] min-w-[480px] border-l border-zinc-800 flex flex-col h-screen shrink-0 bg-zinc-950">
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 shrink-0">
         <div className="flex items-center gap-3">
-          <span className="text-xs font-medium uppercase tracking-widest text-zinc-400">Agent Browser</span>
+          <span className="text-xs font-medium uppercase tracking-widest text-zinc-400">SearchFab</span>
           <span className={`text-[10px] px-2 py-0.5 rounded-full ${loading ? "bg-zinc-800 text-zinc-400" : "bg-green-900/40 text-green-400"}`}>
             {loading ? "Working..." : "Ready"}
           </span>
