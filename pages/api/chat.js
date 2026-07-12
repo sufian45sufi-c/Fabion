@@ -168,7 +168,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: rateCheck.reason });
   }
 
-  const model = EFFORT_MODEL_MAP[effort] || EFFORT_MODEL_MAP.medium;
+const model = PERSONA_MODEL_OVERRIDE[persona] || EFFORT_MODEL_MAP[effort] || EFFORT_MODEL_MAP.medium;
   const isReasoningModel = effort === "extra" || effort === "max";
   const personaPrompt = PERSONA_PROMPTS[persona] || PERSONA_PROMPTS.pixel;
 
