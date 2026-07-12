@@ -552,15 +552,6 @@ export default function Chat() {
 
           <div className="mt-auto border-t border-zinc-800 pt-4 space-y-4 px-2 flex flex-col">
             <button
-              onClick={() => router.push("/search")}
-              className={`flex items-center gap-3 text-zinc-500 hover:text-white transition-colors ${
-                sidebarOpen ? "" : "justify-center"
-              }`}
-            >
-              <div className="w-5 h-5 rounded-full border border-zinc-600 shrink-0" />
-              {sidebarOpen && <span className="text-xs">SearchFab</span>}
-            </button>
-            <button
               onClick={() => router.push("/mind")}
               className={`flex items-center gap-3 text-zinc-500 hover:text-white transition-colors ${
                 sidebarOpen ? "" : "justify-center"
@@ -595,7 +586,7 @@ export default function Chat() {
               onClick={handleToggleBrowser}
               className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 rounded-full px-3 py-1.5"
             >
-              {browserOpen ? "Close Browser" : "Chromium"}
+              {browserOpen ? "Close SearchFab" : "SearchFab"}
             </button>
             <button
               onClick={handleToggleDevWorkspace}
