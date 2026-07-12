@@ -1,8 +1,7 @@
 import Head from "next/head";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { onAuthStateChanged } from "firebase/auth";
-import { useEffect } from "react";
 import { auth } from "../lib/firebaseClient";
 
 export default function SearchFab() {
