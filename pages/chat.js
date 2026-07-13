@@ -6,7 +6,6 @@ import { ref, get, set, push, remove } from "firebase/database";
 import { auth, db } from "../lib/firebaseClient";
 import { FormattedText, ModelDropdown, ChatListItem } from "../components/ChatWidgets";
 import DevWorkspace from "../components/DevWorkspace";
-import AgentBrowser from "../components/AgentBrowser";
 
 function deriveTitle(text) {
   const trimmed = text.trim();
@@ -51,7 +50,6 @@ const SEARCH_START = "\u0004";
 const SEARCH_END = "\u0005";
 const IMAGE_START = "\u0006";
 const IMAGE_END = "\u0007";
-const BROWSER_OPEN_SIGNAL = "\u0008";
 
 const READABLE_EXTENSIONS = [
   "txt", "md", "js", "jsx", "ts", "tsx", "py", "json", "csv", "html", "css",
@@ -88,7 +86,6 @@ export default function Chat() {
 
   const [workspaceFiles, setWorkspaceFiles] = useState(null);
   const [devWorkspaceOpen, setDevWorkspaceOpen] = useState(false);
-  const [browserOpen, setBrowserOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const bottomRef = useRef(null);
@@ -175,7 +172,6 @@ export default function Chat() {
     setMessages([]);
     setWorkspaceFiles(null);
     setDevWorkspaceOpen(false);
-    setBrowserOpen(false);
     setAttachments([]);
   };
 
@@ -184,7 +180,6 @@ export default function Chat() {
     setMessages(chatsData[id]?.messages || []);
     setWorkspaceFiles(null);
     setDevWorkspaceOpen(false);
-    setBrowserOpen(false);
     setAttachments([]);
   };
 
@@ -208,7 +203,6 @@ export default function Chat() {
       setMessages([]);
       setWorkspaceFiles(null);
       setDevWorkspaceOpen(false);
-      setBrowserOpen(false);
     }
   };
 
@@ -219,17 +213,10 @@ export default function Chat() {
     });
     setWorkspaceFiles(filesObj);
     setDevWorkspaceOpen(true);
-    setBrowserOpen(false);
   };
 
   const handleToggleDevWorkspace = () => {
     setDevWorkspaceOpen(!devWorkspaceOpen);
-    setBrowserOpen(false);
-  };
-
-  const handleToggleBrowser = () => {
-    setBrowserOpen(!browserOpen);
-    setDevWorkspaceOpen(false);
   };
 
   const handleAttachClick = () => {
@@ -368,9 +355,6 @@ export default function Chat() {
               const parsed = JSON.parse(imageBuffer);
               searchImages = [...searchImages, ...parsed];
             } catch {}
-          } else if (ch === BROWSER_OPEN_SIGNAL) {
-            setBrowserOpen(true);
-            setDevWorkspaceOpen(false);
           } else if (inImageBlock) {
             imageBuffer += ch;
           } else if (inReasoning) {
@@ -436,7 +420,6 @@ export default function Chat() {
           });
           setWorkspaceFiles(filesObj);
           setDevWorkspaceOpen(true);
-          setBrowserOpen(false);
         }
 
         fetch("/api/memory", {
@@ -582,12 +565,6 @@ export default function Chat() {
             <div className="text-sm text-zinc-400 flex-1">
               Fabion <span className="text-zinc-600 ml-1">Agent</span>
             </div>
-            <button
-              onClick={handleToggleBrowser}
-              className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 rounded-full px-3 py-1.5"
-            >
-              {browserOpen ? "Close SearchFab" : "SearchFab"}
-            </button>
             <button
               onClick={handleToggleDevWorkspace}
               className="text-[10px] uppercase tracking-widest text-zinc-500 hover:text-white transition-colors border border-zinc-800 rounded-full px-3 py-1.5"
@@ -736,10 +713,6 @@ export default function Chat() {
 
         {devWorkspaceOpen && (
           <DevWorkspace initialFiles={workspaceFiles} onClose={() => setDevWorkspaceOpen(false)} />
-        )}
-
-        {browserOpen && (
-          <AgentBrowser sessionId={userId} onClose={() => setBrowserOpen(false)} />
         )}
       </div>
     </>
