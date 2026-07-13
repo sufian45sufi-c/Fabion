@@ -34,7 +34,6 @@ function checkRateLimit(userId) {
   return { allowed: true };
 }
 
-// Kimi K2 was deprecated by Groq (March 2026) in favor of GPT-OSS 120B — also free, strong at tool use.
 const EFFORT_MODEL_MAP = {
   low: "llama-3.3-70b-versatile",
   medium: "llama-3.3-70b-versatile",
@@ -62,21 +61,20 @@ const FORMATTING_INSTRUCTIONS = `
 Formatting rules:
 - Use standard markdown: **bold**, headers (##), lists, tables, [text](url) links.
 - Only use fenced code blocks for genuine source code, config files, or commands — never for narrating what a tool call would look like.
-- ABSOLUTE RULE: You must NEVER write text like browser_action(...) or web_search(...) as visible content in your response. If you need to use a tool, you call it through the actual function-calling mechanism — you never type it out as words or code. Writing it as text does nothing and is a mistake. If you find yourself about to type "browser_action" or "web_search" as text, stop and use the real tool call instead.
+- ABSOLUTE RULE: You must NEVER write text like web_search(...) as visible content in your response. If you need to search, you call it through the actual function-calling mechanism — you never type it out as words or code.
 `;
 
 const TOOL_USE_RULES = `
 Tool use rules — follow strictly:
-- If the user asks you to visit, browse, open, navigate to, click on, fill in, or interact with a specific website, "SearchFab", or "the browser", you MUST call the browser_action function directly through the tool-calling mechanism — never as text.
-- If the user asks about current events, prices, recent news, or anything time-sensitive, you MUST call web_search directly through the tool-calling mechanism — never as text.
-- For casual conversation, greetings, or questions you already know confidently, do NOT call any tool — just respond directly.
+- If the user asks about current events, prices, recent news, or anything time-sensitive, or explicitly asks you to search or look something up, you MUST call the web_search function directly through the tool-calling mechanism — never as text, never skipped.
+- For casual conversation, greetings, or questions you already know confidently, do NOT call the tool — just respond directly.
 `;
 
 const PERSONA_PROMPTS = {
   thread: `You are Thread 1.0, Fabion's ultra-fast model. For casual questions: quick, warm, natural. For code: precise, technical, no fluff. Never open with "Sure!" — start directly with the answer.`,
   pixel: `You are Pixel 1.0, Fabion's senior full-stack engineering specialist. Casual questions: friendly and natural. Coding tasks: correct, idiomatic, production-quality code, declared language in fenced blocks, brief approach before code and tradeoffs after, no emojis while coding.`,
   cell: `You are Cell 1.0, Fabion's creative and multi-step reasoning model. Casual/creative questions: warm and thoughtful. Complex requests: work through stages, consider multiple angles. Code: precise, no casualness.`,
-  kimi: `You are Kimi K2, Fabion's agentic coding specialist, powered by GPT-OSS 120B. Casual questions: friendly and natural. Coding and agentic tasks: precise, confident, reliable multi-step execution. Use web search for current information, and browser_action for live website interaction — always through real tool calls, never as text.`,
+  kimi: `You are Kimi K2, Fabion's agentic coding specialist, powered by GPT-OSS 120B. Casual questions: friendly and natural. Coding and agentic tasks: precise, confident, reliable multi-step execution. Use web search for current information.`,
 };
 
 const tools = [
@@ -94,24 +92,6 @@ const tools = [
       },
     },
   },
-  {
-    type: "function",
-    function: {
-      name: "browser_action",
-      description: "Control a real, live web browser session — navigate, click, type, or scroll. The 'url' parameter must be a real website address (e.g. 'https://youtube.com'), never a search phrase or sentence.",
-      parameters: {
-        type: "object",
-        properties: {
-          type: { type: "string", enum: ["navigate", "click", "type", "scroll"], description: "The browser action to perform." },
-          url: { type: "string", description: "A real URL to navigate to, e.g. 'https://youtube.com'. Required for 'navigate'. Must not be a search phrase." },
-          selector: { type: "string", description: "CSS selector for the element (required for 'click' and 'type')." },
-          text: { type: "string", description: "Text to type (required for 'type')." },
-          amount: { type: "number", description: "Pixels to scroll (optional for 'scroll', default 500)." },
-        },
-        required: ["type"],
-      },
-    },
-  },
 ];
 
 async function performWebSearch(query, req) {
@@ -126,26 +106,9 @@ async function performWebSearch(query, req) {
   return { results: data.results || [], images: data.images || [] };
 }
 
-async function performBrowserAction(args, userId, req) {
-  const protocol = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers.host;
-  const res = await fetch(`${protocol}://${host}/api/browser-session`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ sessionId: userId, action: args }),
-  });
-  return res.json();
-}
-
-function detectsBrowserIntent(text) {
+function detectsSearchIntent(text) {
   const t = text.toLowerCase();
-  return /\b(open searchfab|open the browser|navigate to|go to (the )?website|browse to|visit (the )?site|click on|fill in|open google|open youtube)\b/.test(t);
-}
-
-// Detects the specific bug we just fixed: model narrating a tool call as plain text
-// instead of actually invoking it. Used to strip that text so it never reaches the user.
-function stripFakeToolCallText(text) {
-  return text.replace(/\b(browser_action|web_search)\s*\(\s*\{[^}]*\}\s*\)/gi, "").trim();
+  return /\b(search for|look up|latest|current|today's|recent news|what's happening|who won|price of)\b/.test(t);
 }
 
 export default async function handler(req, res) {
@@ -182,7 +145,7 @@ export default async function handler(req, res) {
   }
 
   const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
-  const shouldForceBrowser = lastUserMessage && detectsBrowserIntent(lastUserMessage.content);
+  const shouldForceSearch = lastUserMessage && detectsSearchIntent(lastUserMessage.content);
 
   res.writeHead(200, {
     "Content-Type": "text/plain; charset=utf-8",
@@ -198,8 +161,8 @@ export default async function handler(req, res) {
         messages: workingMessages,
         model,
         tools,
-        tool_choice: shouldForceBrowser
-          ? { type: "function", function: { name: "browser_action" } }
+        tool_choice: shouldForceSearch
+          ? { type: "function", function: { name: "web_search" } }
           : "auto",
       });
 
@@ -228,66 +191,9 @@ export default async function handler(req, res) {
               res.write("\u0006" + JSON.stringify(images) + "\u0007");
             }
           }
-
-          if (call.function.name === "browser_action") {
-            res.write("\u0008");
-            const args = JSON.parse(call.function.arguments || "{}");
-            const browserData = await performBrowserAction(args, userId, req);
-
-            workingMessages.push({
-              role: "tool",
-              tool_call_id: call.id,
-              content: browserData.error
-                ? `Browser action failed: ${browserData.error}`
-                : `Navigated to ${browserData.url}. Page title: "${browserData.title}". Visible text: ${browserData.text?.slice(0, 500)}`,
-            });
-          }
         }
 
         res.write("\u0005");
-      } else if (choice.message.content && /\b(browser_action|web_search)\s*\(/i.test(choice.message.content)) {
-        // The model narrated a fake tool call as text instead of really calling it.
-        // Retry once, forcing the correct tool explicitly rather than showing garbage to the user.
-        const wantsBrowser = /browser_action/i.test(choice.message.content);
-        const forcedTool = wantsBrowser ? "browser_action" : "web_search";
-
-        const retryPass = await groq.chat.completions.create({
-          messages: workingMessages,
-          model,
-          tools,
-          tool_choice: { type: "function", function: { name: forcedTool } },
-        });
-
-        const retryChoice = retryPass.choices[0];
-        const retryCalls = retryChoice.message.tool_calls;
-
-        if (retryCalls && retryCalls.length > 0) {
-          res.write("\u0004");
-          workingMessages.push(retryChoice.message);
-
-          for (const call of retryCalls) {
-            if (call.function.name === "web_search") {
-              const args = JSON.parse(call.function.arguments || "{}");
-              const { results, images } = await performWebSearch(args.query || "", req);
-              const formatted = results.map((r, i) => `[${i + 1}] ${r.title}\n${r.url}\n${r.snippet}`).join("\n\n");
-              workingMessages.push({ role: "tool", tool_call_id: call.id, content: formatted || "No results found." });
-              if (images.length > 0) res.write("\u0006" + JSON.stringify(images) + "\u0007");
-            }
-            if (call.function.name === "browser_action") {
-              res.write("\u0008");
-              const args = JSON.parse(call.function.arguments || "{}");
-              const browserData = await performBrowserAction(args, userId, req);
-              workingMessages.push({
-                role: "tool",
-                tool_call_id: call.id,
-                content: browserData.error
-                  ? `Browser action failed: ${browserData.error}`
-                  : `Navigated to ${browserData.url}. Page title: "${browserData.title}". Visible text: ${browserData.text?.slice(0, 500)}`,
-              });
-            }
-          }
-          res.write("\u0005");
-        }
       }
     } catch (toolErr) {
       console.error("Tool-calling pass failed, falling back to plain response:", toolErr);
