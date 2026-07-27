@@ -1,50 +1,219 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
 import AuthModal from "../components/AuthModal";
-import WorkspaceShowcase from "../components/WorkspaceShowcase";
 
-function ModelRow({ logo, name, description, gradient, reverse }) {
+function FloatingWindow({ title, rotate, children, className = "", style = {} }) {
+  const [hovered, setHovered] = useState(false);
   return (
     <div
-      className={`flex flex-col md:flex-row items-center gap-10 md:gap-16 ${
-        reverse ? "md:flex-row-reverse" : ""
-      }`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      className={`absolute bg-white border border-[#d8d3c8] rounded-[10px] shadow-md transition-transform duration-200 ${className}`}
+      style={{
+        transform: `rotate(${rotate}deg) ${hovered ? "translateY(-3px)" : ""}`,
+        zIndex: hovered ? 30 : 10,
+        boxShadow: hovered
+          ? "0 12px 24px rgba(0,0,0,0.12)"
+          : "0 4px 12px rgba(0,0,0,0.06)",
+        ...style,
+      }}
     >
-      <div className="flex-1 flex justify-center relative">
-        <div
-          className="absolute inset-0 blur-3xl opacity-30 rounded-full"
-          style={{ background: gradient }}
-        />
-        <img src={logo} alt={name} className="relative w-full max-w-md h-auto object-contain" />
+      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[#e8e4d9]">
+        <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+        <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+        <span className="ml-2 text-[11px] text-[#8a8578]" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+          {title}
+        </span>
       </div>
-      <div className="flex-1">
-        <h3
-          className="text-5xl mb-6 font-bold"
-          style={{
-            background: gradient,
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}
-        >
-          {name}
-        </h3>
-        <p className="text-zinc-300 text-lg leading-relaxed">{description}</p>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+function TerminalWindow() {
+  return (
+    <FloatingWindow title="terminal.mov" rotate={-2} className="w-[280px] hidden lg:block" style={{ top: "150px", left: "70px" }}>
+      <div className="p-4 text-[11px] leading-relaxed text-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <div>&gt; fabion init</div>
+        <div>&gt; loading models...</div>
+        <div>&gt; connecting to agents...</div>
+        <div>&gt; building wonderful things...</div>
+        <div className="my-2 flex items-center gap-2">
+          <div className="flex-1 h-2 bg-[#eee] rounded-sm overflow-hidden">
+            <div className="h-full bg-black" style={{ width: "70%" }} />
+          </div>
+          <span>70%</span>
+        </div>
+        <div>&gt; _</div>
       </div>
+    </FloatingWindow>
+  );
+}
+
+function BrainstormWindow() {
+  return (
+    <FloatingWindow title="brainstorm.md" rotate={1} className="w-[260px] hidden lg:block" style={{ top: "125px", left: "460px" }}>
+      <div className="p-4 text-[11px] leading-relaxed text-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <div className="font-bold mb-2"># Ideas</div>
+        <div>- [x] AI IDE</div>
+        <div>- [x] Deploy in one click</div>
+        <div>- [ ] Mobile app</div>
+        <div>- [ ] More agents</div>
+      </div>
+    </FloatingWindow>
+  );
+}
+
+function BuildPreviewWindow() {
+  return (
+    <FloatingWindow title="build-v2.png" rotate={-1} className="w-[240px] hidden lg:block" style={{ top: "130px", right: "70px" }}>
+      <div className="p-3">
+        <div className="bg-[#f4f2ec] rounded h-32 flex flex-col gap-1 p-2">
+          <div className="h-2 bg-[#ddd8ca] rounded w-2/3" />
+          <div className="flex-1 grid grid-cols-3 gap-1 mt-1">
+            <div className="bg-[#e4e0d4] rounded" />
+            <div className="bg-[#e4e0d4] rounded" />
+            <div className="bg-[#e4e0d4] rounded" />
+          </div>
+        </div>
+      </div>
+    </FloatingWindow>
+  );
+}
+
+function AgentLogsWindow() {
+  return (
+    <FloatingWindow title="Agent Logs.txt" rotate={2} className="w-[220px] hidden md:block" style={{ top: "440px", left: "215px" }}>
+      <div className="p-4 text-[10px] leading-relaxed text-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        <div>[10:42] Planning...</div>
+        <div>[10:43] Analyzing...</div>
+        <div>[10:45] Writing code...</div>
+        <div>[10:47] Testing...</div>
+        <div>[10:49] Done! ✓</div>
+      </div>
+    </FloatingWindow>
+  );
+}
+
+function PreviewVideoWindow() {
+  return (
+    <FloatingWindow title="preview.mp4" rotate={3} className="w-[240px] hidden lg:block" style={{ top: "430px", right: "60px" }}>
+      <div className="p-2">
+        <div className="rounded h-32 flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-sky-200 to-emerald-200">
+          <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center">▶</div>
+        </div>
+      </div>
+    </FloatingWindow>
+  );
+}
+
+function TaskCompletedWindow() {
+  const items = ["UI Design", "Backend", "Database", "Deploy"];
+  return (
+    <FloatingWindow title="Task Completed" rotate={-1} className="w-[190px] hidden lg:block" style={{ top: "570px", right: "150px" }}>
+      <div className="p-3 text-[10px] leading-relaxed text-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+        {items.map((it) => (
+          <div key={it} className="flex items-center gap-2 mb-1">
+            <span className="text-green-600">✓</span> {it}
+          </div>
+        ))}
+        <div className="mt-2 text-[9px] text-[#8a8578]">All done! ✓</div>
+      </div>
+    </FloatingWindow>
+  );
+}
+
+function MusicPlayerWindow() {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <FloatingWindow title="lofi beats.mp3" rotate={4} className="w-[220px] hidden lg:block" style={{ bottom: "40px", right: "290px" }}>
+      <div className="p-3 bg-[#1c1c22] text-white rounded-b-[10px]">
+        <div className="text-[10px] mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          lofi beats
+          <br />
+          <span className="text-[#888]">chill coding</span>
+        </div>
+        <div className="flex items-end gap-1 h-6 mb-2">
+          {[3, 6, 4, 8, 5, 7, 3].map((h, i) => (
+            <div
+              key={i}
+              className="w-1 bg-white rounded-sm"
+              style={{
+                height: `${h * 3}px`,
+                animation: playing ? `musicBar 0.8s ease-in-out ${i * 0.1}s infinite alternate` : "none",
+              }}
+            />
+          ))}
+        </div>
+        <div className="flex items-center justify-center gap-4 text-xs">
+          <span>⏮</span>
+          <button onClick={() => setPlaying(!playing)}>{playing ? "⏸" : "▶"}</button>
+          <span>⏭</span>
+        </div>
+      </div>
+    </FloatingWindow>
+  );
+}
+
+function PixelRobotWindow() {
+  const [waving, setWaving] = useState(false);
+  return (
+    <FloatingWindow
+      title="pixel-robot.png"
+      rotate={-2}
+      className="w-[190px] hidden lg:block"
+      style={{ bottom: "150px", left: "300px" }}
+    >
+      <div
+        className="p-4 flex flex-col items-center gap-2 cursor-pointer"
+        onMouseEnter={() => setWaving(true)}
+        onMouseLeave={() => setWaving(false)}
+      >
+        <div className="text-5xl" style={{ transform: waving ? "rotate(-8deg)" : "rotate(0deg)", transition: "transform 0.3s" }}>
+          🤖
+        </div>
+        <div className="text-[9px] text-[#8a8578]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          {waving ? "hello! ✦" : "click to wave"}
+        </div>
+      </div>
+    </FloatingWindow>
+  );
+}
+
+function StickyNote({ text, rotate, style, colorClass = "bg-[#fdf6a8]" }) {
+  const [flipped, setFlipped] = useState(false);
+  const altText = "Deploy complete.";
+  return (
+    <div
+      onClick={() => setFlipped(!flipped)}
+      className={`absolute w-[130px] p-3 ${colorClass} shadow-md cursor-pointer transition-transform duration-300 hover:-translate-y-1 hidden md:block`}
+      style={{
+        transform: `rotate(${rotate}deg)`,
+        fontFamily: "'JetBrains Mono', monospace",
+        fontSize: "11px",
+        ...style,
+      }}
+    >
+      {flipped ? altText : text}
+    </div>
+  );
+}
+
+function PixelDecor({ emoji, style, animate, className = "" }) {
+  return (
+    <div
+      className={`absolute text-3xl select-none pointer-events-none hidden md:block ${className}`}
+      style={{ ...style, animation: animate }}
+    >
+      {emoji}
     </div>
   );
 }
 
 export default function Home() {
-  const [scrolled, setScrolled] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const scrollToModels = () => {
     document.getElementById("models")?.scrollIntoView({ behavior: "smooth" });
@@ -55,236 +224,170 @@ export default function Home() {
       <Head>
         <title>Fabion | AI Agent</title>
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital@0;1&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
+        <style>{`
+          @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+          }
+          @keyframes steamRise {
+            0% { transform: translateY(0) scale(1); opacity: 0.6; }
+            100% { transform: translateY(-14px) scale(1.3); opacity: 0; }
+          }
+          @keyframes musicBar {
+            0% { height: 4px; }
+            100% { height: 22px; }
+          }
+          @keyframes duckWaddle {
+            0%, 100% { transform: translateX(0) rotate(0deg); }
+            50% { transform: translateX(6px) rotate(4deg); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+          }
+        `}</style>
       </Head>
 
       <div
-        className="bg-[#0a0a12] text-white min-h-screen selection:bg-fuchsia-500 selection:text-white antialiased overflow-x-hidden"
-        style={{ fontFamily: "'Inter', sans-serif" }}
+        className="relative min-h-screen text-black overflow-hidden"
+        style={{
+          fontFamily: "'Inter', sans-serif",
+          backgroundColor: "#faf8f2",
+          backgroundImage: "radial-gradient(#e4dfd0 1px, transparent 1px)",
+          backgroundSize: "22px 22px",
+        }}
       >
-        <nav
-          className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between px-6 py-2 rounded-full border transition-all duration-500 backdrop-blur-xl ${
-            scrolled
-              ? "bg-black/60 border-white/10 w-[90%] md:w-[700px] shadow-2xl"
-              : "bg-black/30 border-white/5 w-[90%] md:w-[700px]"
-          }`}
-        >
-          <div
-            className="font-extrabold tracking-tighter text-sm cursor-pointer px-2"
-            style={{
-              background: "linear-gradient(90deg, #f97316, #ec4899, #8b5cf6)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            FABION
+        {/* Nav */}
+        <nav className="relative z-40 flex items-center justify-between px-8 py-5">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">🙂</span>
+            <span className="text-lg font-semibold">Fabion</span>
           </div>
-          <div className="hidden md:flex gap-6 text-[10px] uppercase tracking-widest text-zinc-400">
-            <button onClick={scrollToModels} className="hover:text-white transition-colors duration-300">
-              Models
-            </button>
-            <button
-              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-              className="hover:text-white transition-colors duration-300"
-            >
-              Features
-            </button>
-            <button
-              onClick={() => document.getElementById("demo")?.scrollIntoView({ behavior: "smooth" })}
-              className="hover:text-white transition-colors duration-300"
-            >
-              Demo
-            </button>
+          <div className="hidden md:flex gap-8 text-sm text-[#5c584c]">
+            <button onClick={scrollToModels} className="hover:text-black transition-colors">Models</button>
+            <button className="hover:text-black transition-colors">Gallery</button>
+            <button className="hover:text-black transition-colors">Docs</button>
+            <button className="hover:text-black transition-colors">Pricing</button>
           </div>
-          <div className="flex gap-3 items-center">
+          <div className="flex items-center gap-6">
+            <div className="hidden md:flex gap-6 text-sm text-[#5c584c]">
+              <button className="hover:text-black transition-colors">Community</button>
+              <button className="hover:text-black transition-colors">GitHub</button>
+            </div>
             <button
               onClick={() => {
                 setAuthMode(false);
                 setAuthOpen(true);
               }}
-              className="text-[10px] uppercase tracking-widest text-zinc-400 hover:text-white transition-colors"
+              className="bg-black text-white text-sm px-5 py-2 rounded-md hover:-translate-y-0.5 transition-transform"
+              style={{ boxShadow: "inset 0 -2px 0 rgba(255,255,255,0.15)" }}
             >
-              Sign In
-            </button>
-            <button
-              onClick={() => {
-                setAuthMode(true);
-                setAuthOpen(true);
-              }}
-              className="text-[10px] uppercase tracking-widest text-white px-4 py-1.5 rounded-full hover:scale-105 transition-all"
-              style={{ background: "linear-gradient(90deg, #f97316, #ec4899, #8b5cf6)" }}
-            >
-              Sign Up
+              Login
             </button>
           </div>
         </nav>
 
-        <section
-          id="hero"
-          className="relative min-h-screen flex flex-col justify-center items-center px-6 overflow-hidden"
-        >
-          <div
-            className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full blur-[120px] opacity-40 animate-pulse"
-            style={{ background: "radial-gradient(circle, #f97316, transparent 70%)", animationDuration: "6s" }}
-          />
-          <div
-            className="absolute -bottom-40 -right-40 w-[600px] h-[600px] rounded-full blur-[120px] opacity-40 animate-pulse"
-            style={{ background: "radial-gradient(circle, #8b5cf6, transparent 70%)", animationDuration: "8s" }}
-          />
-          <div
-            className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full blur-[100px] opacity-30 animate-pulse"
-            style={{ background: "radial-gradient(circle, #ec4899, transparent 70%)", animationDuration: "7s" }}
-          />
+        {/* Desktop area */}
+        <div className="relative max-w-[1400px] mx-auto px-6" style={{ minHeight: "900px" }}>
+          <TerminalWindow />
+          <BrainstormWindow />
+          <BuildPreviewWindow />
+          <AgentLogsWindow />
+          <PreviewVideoWindow />
+          <TaskCompletedWindow />
+          <MusicPlayerWindow />
+          <PixelRobotWindow />
 
-          <div className="relative z-10 flex flex-col items-center pt-20">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 backdrop-blur-sm mb-8 text-[10px] uppercase tracking-widest text-zinc-300">
-              <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-orange-400 to-pink-500 animate-pulse" />
-              Now live — three models, one platform
-            </div>
+          <StickyNote text="Need better auth..." rotate={-3} style={{ top: "300px", right: "40px" }} colorClass="bg-[#ffd6dd]" />
+          <StickyNote text="Should support plugins." rotate={2} style={{ bottom: "130px", right: "350px" }} colorClass="bg-[#fdf6a8]" />
+          <StickyNote text="Idea generated in 2.4 seconds." rotate={-2} style={{ bottom: "60px", left: "550px" }} colorClass="bg-[#c9e8ff]" />
 
+          <PixelDecor emoji="☁️" style={{ top: "110px", left: "380px" }} animate="floatSlow 6s ease-in-out infinite" />
+          <PixelDecor emoji="🐱" style={{ top: "220px", left: "390px" }} />
+          <PixelDecor emoji="⭐" style={{ top: "220px", right: "310px" }} />
+          <PixelDecor emoji="🌳" style={{ top: "120px", right: "20px" }} />
+          <PixelDecor emoji="📁" style={{ top: "360px", left: "395px" }} className="text-2xl" />
+          <PixelDecor emoji="🦆" style={{ top: "480px", right: "230px" }} animate="duckWaddle 4s ease-in-out infinite" />
+          <PixelDecor emoji="☕" style={{ top: "380px", left: "80px" }} />
+          <PixelDecor emoji="🌸" style={{ bottom: "80px", left: "150px" }} />
+          <PixelDecor emoji="🎮" style={{ bottom: "170px", left: "220px" }} />
+          <PixelDecor emoji="💾" style={{ bottom: "40px", right: "480px" }} />
+          <PixelDecor emoji="🖥️" style={{ bottom: "80px", right: "80px" }} />
+          <PixelDecor emoji="🍄" style={{ bottom: "60px", right: "230px" }} className="text-2xl" />
+          <PixelDecor emoji="🗑️" style={{ bottom: "160px", left: "80px" }} />
+
+          {/* Coffee steam */}
+          <div className="absolute hidden md:block" style={{ top: "365px", left: "100px" }}>
+            <div className="w-1 h-2 bg-[#ccc] rounded-full" style={{ animation: "steamRise 2s ease-in-out infinite" }} />
+          </div>
+
+          {/* Hero */}
+          <div className="relative z-20 flex flex-col items-center justify-center pt-16 pb-10 text-center">
             <h1
-              className="text-[64px] md:text-[130px] font-extrabold leading-[0.95] mb-8 text-center tracking-tight"
+              className="mb-6"
               style={{
-                background: "linear-gradient(120deg, #fb923c 0%, #f472b6 35%, #a78bfa 70%, #60a5fa 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: "clamp(40px, 8vw, 92px)",
+                lineHeight: 1.15,
+                letterSpacing: "-1px",
               }}
             >
               Fabion
             </h1>
-            <p className="text-zinc-300 text-center max-w-lg mb-12 text-lg">
-              The intelligence that works, not waits. Built for thinking, creating, and executing — with real personality.
+            <p className="text-lg md:text-xl text-[#4a463c] max-w-xl mb-10">
+              The AI agent that actually builds.
+              <br />
+              Apps. Games. Automations. <span className="underline">Anything.</span>
             </p>
+
             <div className="flex gap-4 flex-wrap justify-center">
-              <button
-                onClick={scrollToModels}
-                className="px-8 py-3.5 text-black text-sm font-bold rounded-full hover:scale-105 transition-transform"
-                style={{ background: "linear-gradient(90deg, #fb923c, #f472b6)" }}
-              >
-                Start Building
-              </button>
               <button
                 onClick={() => {
                   setAuthMode(true);
                   setAuthOpen(true);
                 }}
-                className="px-8 py-3.5 text-white text-sm font-medium rounded-full border border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all"
+                className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-md text-sm font-medium hover:-translate-y-0.5 transition-transform"
+                style={{ boxShadow: "0 3px 0 rgba(0,0,0,0.25)" }}
               >
-                Try Fabion Free
+                ↗ Start Building
+              </button>
+              <button
+                onClick={scrollToModels}
+                className="flex items-center gap-2 bg-white border border-[#ddd8ca] text-black px-6 py-3 rounded-md text-sm font-medium hover:-translate-y-0.5 transition-transform"
+                style={{ boxShadow: "0 3px 0 rgba(0,0,0,0.06)" }}
+              >
+                ▶ Watch Demo
               </button>
             </div>
           </div>
-        </section>
+        </div>
 
-        <section id="models" className="py-32 px-8 max-w-6xl mx-auto border-t border-white/10 relative">
-          <h2 className="text-4xl italic mb-24" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Three models. One intelligence.
-          </h2>
-          <div className="flex flex-col gap-32">
-            <ModelRow
-              logo="/thread-logo.png"
-              name="Thread"
-              gradient="linear-gradient(90deg, #fb923c, #facc15)"
-              description="Ultra-fast reasoning for quick, direct answers. Thread is built for speed above all — when you need something now, not a lecture."
-            />
-            <ModelRow
-              logo="/pixel-logo.png"
-              name="Pixel"
-              gradient="linear-gradient(90deg, #ec4899, #a78bfa)"
-              description="Sharp, structured, and precise — built for code. Pixel thinks like a senior engineer across the full stack, backend and frontend alike."
-              reverse
-            />
-            <ModelRow
-              logo="/cell-logo.png"
-              name="Cell"
-              gradient="linear-gradient(90deg, #8b5cf6, #60a5fa)"
-              description="Creative, multi-step reasoning for complex problems. Cell breaks down ambiguity, weighs tradeoffs, and thinks things through properly."
-            />
-          </div>
-        </section>
-
-        <section id="features" className="py-32 px-8 max-w-6xl mx-auto border-t border-white/10">
-          <h2 className="text-4xl italic mb-20" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Designed to feel alive.
-          </h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        {/* Models section (kept from before, restyled to match) */}
+        <section id="models" className="relative z-20 py-32 px-8 max-w-5xl mx-auto border-t border-[#e4dfd0]">
+          <h2 className="text-3xl mb-16 font-semibold text-center">Three models. One intelligence.</h2>
+          <div className="grid md:grid-cols-3 gap-6">
             {[
-              { n: "01", t: "Reasoning", c: "from-orange-400 to-pink-500" },
-              { n: "02", t: "Code", c: "from-pink-500 to-purple-500" },
-              { n: "03", t: "Research", c: "from-purple-500 to-indigo-500" },
-              { n: "04", t: "Automation", c: "from-indigo-500 to-blue-500" },
-              { n: "05", t: "Memory", c: "from-blue-500 to-cyan-400" },
-              { n: "06", t: "Multi-chat", c: "from-cyan-400 to-orange-400" },
-            ].map((f) => (
+              { name: "Thread", logo: "/thread-logo.png", desc: "Ultra-fast reasoning for quick, direct answers." },
+              { name: "Pixel", logo: "/pixel-logo.png", desc: "Sharp, structured, and precise — built for code." },
+              { name: "Cell", logo: "/cell-logo.png", desc: "Creative, multi-step reasoning for complex problems." },
+            ].map((m) => (
               <div
-                key={f.n}
-                className="p-6 rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-sm hover:bg-white/[0.06] transition-all"
+                key={m.name}
+                className="bg-white border border-[#e4dfd0] rounded-[10px] p-6 hover:-translate-y-1 transition-transform"
+                style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
               >
-                <div
-                  className={`w-10 h-10 rounded-full bg-gradient-to-br ${f.c} flex items-center justify-center mb-4 text-xs font-bold text-black`}
-                >
-                  {f.n}
-                </div>
-                <h4 className="text-lg font-semibold mb-1">{f.t}</h4>
-                <p className="text-zinc-400 text-sm">Engineered for high-throughput intelligent processing.</p>
+                <img src={m.logo} alt={m.name} className="w-20 h-20 object-contain mb-4 mx-auto" />
+                <h3 className="text-lg font-semibold mb-2 text-center">{m.name}</h3>
+                <p className="text-sm text-[#5c584c] text-center">{m.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
-        <section id="demo" className="py-32 px-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl italic mb-12" style={{ fontFamily: "'Playfair Display', serif" }}>
-              Engineered to execute.
-            </h2>
-            <WorkspaceShowcase />
-          </div>
-        </section>
-
-        <section
-          id="subscribe"
-          className="py-32 px-8 text-center relative overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #1e0a2e 0%, #0a0a12 60%)" }}
-        >
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full blur-[130px] opacity-30"
-            style={{ background: "radial-gradient(circle, #ec4899, transparent 70%)" }}
-          />
-          <div className="relative z-10">
-            <h2
-              className="text-6xl italic mb-8"
-              style={{
-                fontFamily: "'Playfair Display', serif",
-                background: "linear-gradient(90deg, #fb923c, #f472b6, #a78bfa)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              Build with Fabion.
-            </h2>
-            <p className="text-zinc-300 max-w-md mx-auto mb-12 text-sm">
-              Sign up to start chatting with Thread, Pixel, and Cell today.
-            </p>
-            <button
-              onClick={() => {
-                setAuthMode(true);
-                setAuthOpen(true);
-              }}
-              className="px-8 py-3.5 text-black text-sm font-bold rounded-full hover:scale-105 transition-transform"
-              style={{ background: "linear-gradient(90deg, #fb923c, #f472b6, #a78bfa)" }}
-            >
-              Get Started
-            </button>
-          </div>
-        </section>
-
-        <footer className="py-20 border-t border-white/10 text-center text-zinc-600 text-[10px] uppercase tracking-widest">
-          <p>© 2026 Fabion. All rights reserved.</p>
+        <footer className="relative z-20 py-16 text-center text-xs text-[#8a8578] border-t border-[#e4dfd0]">
+          © 2026 Fabion. All rights reserved.
         </footer>
 
         <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} startInSignUp={authMode} />
