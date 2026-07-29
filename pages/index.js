@@ -1,393 +1,667 @@
 import Head from "next/head";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import AuthModal from "../components/AuthModal";
 
-function FloatingWindow({ title, rotate, children, className = "", style = {} }) {
-  const [hovered, setHovered] = useState(false);
+const COLORS = {
+  bg: "#C9D8F4",
+  cream: "#F7F1E1",
+  border: "#3B2A1A",
+  blue: "#5B8DEF",
+  yellow: "#F4C544",
+  pink: "#F186B4",
+  green: "#7ABF6B",
+};
+
+function PixelBorder({ children, className = "", style = {} }) {
   return (
     <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      className={`absolute bg-white border border-[#d8d3c8] rounded-[10px] shadow-md transition-transform duration-200 ${className}`}
+      className={`bg-[#F7F1E1] ${className}`}
       style={{
-        transform: `rotate(${rotate}deg) ${hovered ? "translateY(-3px)" : ""}`,
-        zIndex: hovered ? 30 : 10,
-        boxShadow: hovered
-          ? "0 12px 24px rgba(0,0,0,0.12)"
-          : "0 4px 12px rgba(0,0,0,0.06)",
+        border: `4px solid ${COLORS.border}`,
+        boxShadow: `6px 6px 0px ${COLORS.border}`,
         ...style,
       }}
     >
-      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[#e8e4d9]">
-        <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
-        <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
-        <span className="ml-2 text-[11px] text-[#8a8578]" style={{ fontFamily: "'Press Start 2P', monospace" }}>
-          {title}
-        </span>
-      </div>
-      <div>{children}</div>
+      {children}
     </div>
   );
 }
 
-function TerminalWindow() {
+function PixelButton({ children, onClick, variant = "primary", className = "" }) {
+  const bg = variant === "primary" ? "#1a1410" : "#F7F1E1";
+  const color = variant === "primary" ? "#F7F1E1" : "#1a1410";
   return (
-    <FloatingWindow title="terminal.mov" rotate={-2} className="w-[280px] hidden lg:block" style={{ top: "150px", left: "70px" }}>
-      <div className="p-4 text-[11px] leading-relaxed text-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-        <div>&gt; fabion init</div>
-        <div>&gt; loading models...</div>
-        <div>&gt; connecting to agents...</div>
-        <div>&gt; building wonderful things...</div>
-        <div className="my-2 flex items-center gap-2">
-          <div className="flex-1 h-2 bg-[#eee] rounded-sm overflow-hidden">
-            <div className="h-full bg-black" style={{ width: "70%" }} />
-          </div>
-          <span>70%</span>
-        </div>
-        <div>&gt; _</div>
-      </div>
-    </FloatingWindow>
-  );
-}
-
-function BrainstormWindow() {
-  return (
-    <FloatingWindow title="brainstorm.md" rotate={1} className="w-[260px] hidden lg:block" style={{ top: "125px", left: "460px" }}>
-      <div className="p-4 text-[11px] leading-relaxed text-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-        <div className="font-bold mb-2"># Ideas</div>
-        <div>- [x] AI IDE</div>
-        <div>- [x] Deploy in one click</div>
-        <div>- [ ] Mobile app</div>
-        <div>- [ ] More agents</div>
-      </div>
-    </FloatingWindow>
-  );
-}
-
-function BuildPreviewWindow() {
-  return (
-    <FloatingWindow title="build-v2.png" rotate={-1} className="w-[240px] hidden lg:block" style={{ top: "130px", right: "70px" }}>
-      <div className="p-3">
-        <div className="bg-[#f4f2ec] rounded h-32 flex flex-col gap-1 p-2">
-          <div className="h-2 bg-[#ddd8ca] rounded w-2/3" />
-          <div className="flex-1 grid grid-cols-3 gap-1 mt-1">
-            <div className="bg-[#e4e0d4] rounded" />
-            <div className="bg-[#e4e0d4] rounded" />
-            <div className="bg-[#e4e0d4] rounded" />
-          </div>
-        </div>
-      </div>
-    </FloatingWindow>
-  );
-}
-
-function AgentLogsWindow() {
-  return (
-    <FloatingWindow title="Agent Logs.txt" rotate={2} className="w-[220px] hidden md:block" style={{ top: "440px", left: "215px" }}>
-      <div className="p-4 text-[10px] leading-relaxed text-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-        <div>[10:42] Planning...</div>
-        <div>[10:43] Analyzing...</div>
-        <div>[10:45] Writing code...</div>
-        <div>[10:47] Testing...</div>
-        <div>[10:49] Done! ✓</div>
-      </div>
-    </FloatingWindow>
-  );
-}
-
-function PreviewVideoWindow() {
-  return (
-    <FloatingWindow title="preview.mp4" rotate={3} className="w-[240px] hidden lg:block" style={{ top: "430px", right: "60px" }}>
-      <div className="p-2">
-        <div className="rounded h-32 flex items-center justify-center relative overflow-hidden bg-gradient-to-b from-sky-200 to-emerald-200">
-          <div className="w-10 h-10 rounded-full bg-white/80 flex items-center justify-center">▶</div>
-        </div>
-      </div>
-    </FloatingWindow>
-  );
-}
-
-function TaskCompletedWindow() {
-  const items = ["UI Design", "Backend", "Database", "Deploy"];
-  return (
-    <FloatingWindow title="Task Completed" rotate={-1} className="w-[190px] hidden lg:block" style={{ top: "570px", right: "150px" }}>
-      <div className="p-3 text-[10px] leading-relaxed text-black" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-        {items.map((it) => (
-          <div key={it} className="flex items-center gap-2 mb-1">
-            <span className="text-green-600">✓</span> {it}
-          </div>
-        ))}
-        <div className="mt-2 text-[9px] text-[#8a8578]">All done! ✓</div>
-      </div>
-    </FloatingWindow>
-  );
-}
-
-function MusicPlayerWindow() {
-  const [playing, setPlaying] = useState(false);
-  return (
-    <FloatingWindow title="lofi beats.mp3" rotate={4} className="w-[220px] hidden lg:block" style={{ bottom: "40px", right: "290px" }}>
-      <div className="p-3 bg-[#1c1c22] text-white rounded-b-[10px]">
-        <div className="text-[10px] mb-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          lofi beats
-          <br />
-          <span className="text-[#888]">chill coding</span>
-        </div>
-        <div className="flex items-end gap-1 h-6 mb-2">
-          {[3, 6, 4, 8, 5, 7, 3].map((h, i) => (
-            <div
-              key={i}
-              className="w-1 bg-white rounded-sm"
-              style={{
-                height: `${h * 3}px`,
-                animation: playing ? `musicBar 0.8s ease-in-out ${i * 0.1}s infinite alternate` : "none",
-              }}
-            />
-          ))}
-        </div>
-        <div className="flex items-center justify-center gap-4 text-xs">
-          <span>⏮</span>
-          <button onClick={() => setPlaying(!playing)}>{playing ? "⏸" : "▶"}</button>
-          <span>⏭</span>
-        </div>
-      </div>
-    </FloatingWindow>
-  );
-}
-
-function PixelRobotWindow() {
-  const [waving, setWaving] = useState(false);
-  return (
-    <FloatingWindow
-      title="pixel-robot.png"
-      rotate={-2}
-      className="w-[190px] hidden lg:block"
-      style={{ bottom: "150px", left: "300px" }}
+    <button
+      onClick={onClick}
+      className={`px-6 py-3 text-xs uppercase tracking-widest transition-all active:translate-x-[3px] active:translate-y-[3px] active:shadow-none hover:-translate-y-0.5 ${className}`}
+      style={{
+        fontFamily: "'Press Start 2P', monospace",
+        background: bg,
+        color,
+        border: `3px solid ${COLORS.border}`,
+        boxShadow: `4px 4px 0px ${COLORS.border}`,
+      }}
     >
+      {children}
+    </button>
+  );
+}
+
+function IconCloud({ size = 40 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="3" y="6" width="10" height="1" fill={COLORS.border} />
+      <rect x="2" y="7" width="12" height="1" fill={COLORS.border} />
+      <rect x="1" y="8" width="14" height="2" fill="#fff" stroke={COLORS.border} strokeWidth="0.3" />
+      <rect x="1" y="8" width="14" height="2" fill="#EAF2FF" />
+      <rect x="2" y="7" width="12" height="1" fill="#EAF2FF" />
+      <rect x="3" y="6" width="10" height="1" fill="#EAF2FF" />
+      <rect x="1" y="8" width="14" height="2" fill="none" stroke={COLORS.border} strokeWidth="0.5" />
+    </svg>
+  );
+}
+
+function IconCode({ size = 40 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="1" y="1" width="14" height="14" fill="#1a1410" stroke={COLORS.border} strokeWidth="0.5" />
+      <path d="M5 5 L2 8 L5 11" stroke={COLORS.green} strokeWidth="1.4" fill="none" strokeLinecap="square" />
+      <path d="M11 5 L14 8 L11 11" stroke={COLORS.green} strokeWidth="1.4" fill="none" strokeLinecap="square" />
+    </svg>
+  );
+}
+
+function IconFlower({ size = 40 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="7" y="9" width="2" height="6" fill={COLORS.green} />
+      <rect x="6" y="3" width="4" height="4" fill={COLORS.pink} />
+      <rect x="2" y="6" width="4" height="4" fill={COLORS.pink} />
+      <rect x="10" y="6" width="4" height="4" fill={COLORS.pink} />
+      <rect x="6" y="9" width="4" height="3" fill={COLORS.pink} />
+      <rect x="6" y="6" width="4" height="4" fill={COLORS.yellow} />
+    </svg>
+  );
+}
+
+function IconBolt({ size = 32 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="9" y="1" width="3" height="2" fill={COLORS.yellow} />
+      <rect x="7" y="3" width="3" height="2" fill={COLORS.yellow} />
+      <rect x="5" y="5" width="4" height="2" fill={COLORS.yellow} />
+      <rect x="7" y="7" width="4" height="2" fill={COLORS.yellow} />
+      <rect x="9" y="9" width="3" height="2" fill={COLORS.yellow} />
+      <rect x="6" y="9" width="3" height="2" fill={COLORS.yellow} />
+      <rect x="4" y="11" width="3" height="2" fill={COLORS.yellow} />
+    </svg>
+  );
+}
+
+function IconPalette({ size = 32 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="2" y="4" width="10" height="8" fill="#fff" stroke={COLORS.border} strokeWidth="0.5" />
+      <rect x="3" y="5" width="2" height="2" fill={COLORS.pink} />
+      <rect x="6" y="5" width="2" height="2" fill={COLORS.yellow} />
+      <rect x="9" y="5" width="2" height="2" fill={COLORS.blue} />
+      <rect x="3" y="8" width="2" height="2" fill={COLORS.green} />
+      <rect x="6" y="8" width="2" height="2" fill="#3B2A1A" />
+    </svg>
+  );
+}
+
+function IconBrain({ size = 32 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="4" y="3" width="8" height="8" fill={COLORS.pink} stroke={COLORS.border} strokeWidth="0.5" />
+      <rect x="6" y="5" width="1" height="1" fill={COLORS.border} />
+      <rect x="9" y="5" width="1" height="1" fill={COLORS.border} />
+      <rect x="5" y="8" width="6" height="1" fill={COLORS.border} />
+    </svg>
+  );
+}
+
+function IconStar({ size = 32, color = COLORS.yellow }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="7" y="1" width="2" height="3" fill={color} />
+      <rect x="7" y="12" width="2" height="3" fill={color} />
+      <rect x="1" y="7" width="3" height="2" fill={color} />
+      <rect x="12" y="7" width="3" height="2" fill={color} />
+      <rect x="6" y="6" width="4" height="4" fill={color} />
+    </svg>
+  );
+}
+
+function IconMac({ size = 100 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 40 40" shapeRendering="crispEdges">
+      <rect x="10" y="4" width="20" height="18" fill="#D8D2C2" stroke={COLORS.border} strokeWidth="0.8" />
+      <rect x="13" y="7" width="14" height="10" fill={COLORS.blue} />
+      <rect x="14" y="24" width="12" height="4" fill="#D8D2C2" stroke={COLORS.border} strokeWidth="0.8" />
+      <rect x="8" y="30" width="24" height="3" fill="#D8D2C2" stroke={COLORS.border} strokeWidth="0.8" />
+      <rect x="10" y="33" width="20" height="4" fill="#C4BCA8" stroke={COLORS.border} strokeWidth="0.8" />
+    </svg>
+  );
+}
+
+function PlantIcon({ size = 40 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="6" y="9" width="4" height="5" fill="#B08968" stroke={COLORS.border} strokeWidth="0.3" />
+      <rect x="7" y="4" width="2" height="6" fill={COLORS.green} />
+      <rect x="4" y="5" width="3" height="2" fill={COLORS.green} />
+      <rect x="9" y="3" width="3" height="2" fill={COLORS.green} />
+    </svg>
+  );
+}
+
+function MugIcon({ size = 30 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" shapeRendering="crispEdges">
+      <rect x="3" y="6" width="8" height="7" fill="#fff" stroke={COLORS.border} strokeWidth="0.5" />
+      <rect x="11" y="8" width="2" height="3" fill="none" stroke={COLORS.border} strokeWidth="0.6" />
+    </svg>
+  );
+}
+
+function Sparkle({ style }) {
+  return (
+    <div className="absolute select-none pointer-events-none" style={{ ...style, animation: "twinkle 2.5s ease-in-out infinite" }}>
+      <svg width="14" height="14" viewBox="0 0 16 16" shapeRendering="crispEdges">
+        <rect x="7" y="2" width="2" height="4" fill={COLORS.yellow} />
+        <rect x="7" y="10" width="2" height="4" fill={COLORS.yellow} />
+        <rect x="2" y="7" width="4" height="2" fill={COLORS.yellow} />
+        <rect x="10" y="7" width="4" height="2" fill={COLORS.yellow} />
+      </svg>
+    </div>
+  );
+}
+
+function ModelCard({ icon, name, tag, desc, accent }) {
+  return (
+    <PixelBorder className="p-6 flex flex-col hover:-translate-y-1.5 transition-transform relative overflow-hidden">
       <div
-        className="p-4 flex flex-col items-center gap-2 cursor-pointer"
-        onMouseEnter={() => setWaving(true)}
-        onMouseLeave={() => setWaving(false)}
+        className="absolute top-0 left-0 w-full h-1.5"
+        style={{ background: accent }}
+      />
+      <div className="mb-4">{icon}</div>
+      <h3 className="text-lg font-bold mb-1" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+        {name}
+      </h3>
+      <div className="text-[10px] mb-4 uppercase tracking-widest" style={{ color: accent, fontFamily: "'Press Start 2P', monospace" }}>
+        {tag}
+      </div>
+      <p className="text-sm text-[#5c5343] mb-6 leading-relaxed flex-1">{desc}</p>
+      <button
+        className="text-xs uppercase tracking-widest self-start hover:translate-x-1 transition-transform"
+        style={{ fontFamily: "'Press Start 2P', monospace", color: COLORS.border }}
       >
-        <div className="text-5xl" style={{ transform: waving ? "rotate(-8deg)" : "rotate(0deg)", transition: "transform 0.3s" }}>
-          🤖
-        </div>
-        <div className="text-[9px] text-[#8a8578]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          {waving ? "hello! ✦" : "click to wave"}
+        Explore →
+      </button>
+    </PixelBorder>
+  );
+}
+
+function FeatureCard({ icon, title, desc, preview }) {
+  return (
+    <PixelBorder className="p-6 hover:-translate-y-1 transition-transform">
+      <div className="flex items-start gap-4 mb-4">
+        <div className="shrink-0">{icon}</div>
+        <div>
+          <h3 className="text-sm font-bold mb-1" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+            {title}
+          </h3>
+          <p className="text-xs text-[#5c5343] leading-relaxed">{desc}</p>
         </div>
       </div>
-    </FloatingWindow>
+      {preview}
+    </PixelBorder>
   );
 }
 
-function StickyNote({ text, rotate, style, colorClass = "bg-[#fdf6a8]" }) {
-  const [flipped, setFlipped] = useState(false);
-  const altText = "Deploy complete.";
+function PricingCard({ name, price, features, cta, highlighted, badge }) {
   return (
     <div
-      onClick={() => setFlipped(!flipped)}
-      className={`absolute w-[130px] p-3 ${colorClass} shadow-md cursor-pointer transition-transform duration-300 hover:-translate-y-1 hidden md:block`}
+      className={`p-8 flex flex-col relative ${highlighted ? "md:-translate-y-4" : ""}`}
       style={{
-        transform: `rotate(${rotate}deg)`,
-        fontFamily: "'JetBrains Mono', monospace",
-        fontSize: "11px",
-        ...style,
+        background: "#F7F1E1",
+        border: `4px solid ${COLORS.border}`,
+        boxShadow: highlighted ? `8px 8px 0px ${COLORS.blue}` : `6px 6px 0px ${COLORS.border}`,
       }}
     >
-      {flipped ? altText : text}
+      {badge && (
+        <div
+          className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-[9px] uppercase tracking-widest"
+          style={{ fontFamily: "'Press Start 2P', monospace", background: COLORS.blue, color: "#fff", border: `2px solid ${COLORS.border}` }}
+        >
+          Popular
+        </div>
+      )}
+      <h3 className="text-base font-bold mb-2" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+        {name}
+      </h3>
+      <div className="mb-6">
+        <span className="text-4xl font-bold" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+          {price}
+        </span>
+        <span className="text-xs text-[#8a8069]"> /mo</span>
+      </div>
+      <ul className="space-y-2.5 mb-8 flex-1">
+        {features.map((f) => (
+          <li key={f} className="text-xs text-[#5c5343] flex items-start gap-2">
+            <span style={{ color: COLORS.green }}>■</span> {f}
+          </li>
+        ))}
+      </ul>
+      <PixelButton variant={highlighted ? "primary" : "secondary"} className="w-full">
+        {cta}
+      </PixelButton>
     </div>
   );
 }
 
-function PixelDecor({ emoji, style, animate, className = "" }) {
+function FAQItem({ q, a }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div
-      className={`absolute text-3xl select-none pointer-events-none hidden md:block ${className}`}
-      style={{ ...style, animation: animate }}
-    >
-      {emoji}
-    </div>
+    <PixelBorder className="overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-5 py-4 text-left text-sm font-bold"
+        style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "11px" }}
+      >
+        {q}
+        <span>{open ? "−" : "+"}</span>
+      </button>
+      {open && <div className="px-5 pb-4 text-xs text-[#5c5343] leading-relaxed">{a}</div>}
+    </PixelBorder>
   );
 }
 
 export default function Home() {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState(false);
-
-  const scrollToModels = () => {
-    document.getElementById("models")?.scrollIntoView({ behavior: "smooth" });
-  };
+  const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <>
       <Head>
         <title>Fabion | AI Agent</title>
         <link
-          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
         <style>{`
-          @keyframes floatSlow {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-6px); }
-          }
-          @keyframes steamRise {
-            0% { transform: translateY(0) scale(1); opacity: 0.6; }
-            100% { transform: translateY(-14px) scale(1.3); opacity: 0; }
-          }
-          @keyframes musicBar {
-            0% { height: 4px; }
-            100% { height: 22px; }
-          }
-          @keyframes duckWaddle {
-            0%, 100% { transform: translateX(0) rotate(0deg); }
-            50% { transform: translateX(6px) rotate(4deg); }
-          }
-          @media (prefers-reduced-motion: reduce) {
-            * { animation: none !important; transition: none !important; }
-          }
+          @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.1); } }
+          @keyframes floatPixel { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+          @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
         `}</style>
       </Head>
 
       <div
-        className="relative min-h-screen text-black overflow-hidden"
+        className="min-h-screen text-[#1a1410]"
         style={{
           fontFamily: "'Inter', sans-serif",
-          backgroundColor: "#faf8f2",
-          backgroundImage: "radial-gradient(#e4dfd0 1px, transparent 1px)",
-          backgroundSize: "22px 22px",
+          backgroundColor: COLORS.bg,
+          backgroundImage:
+            "linear-gradient(rgba(59,42,26,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(59,42,26,0.08) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
         }}
       >
-        {/* Nav */}
-        <nav className="relative z-40 flex items-center justify-between px-8 py-5">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">🙂</span>
-            <span className="text-lg font-semibold">Fabion</span>
-          </div>
-          <div className="hidden md:flex gap-8 text-sm text-[#5c584c]">
-            <button onClick={scrollToModels} className="hover:text-black transition-colors">Models</button>
-            <button className="hover:text-black transition-colors">Gallery</button>
-            <button className="hover:text-black transition-colors">Docs</button>
-            <button className="hover:text-black transition-colors">Pricing</button>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex gap-6 text-sm text-[#5c584c]">
-              <button className="hover:text-black transition-colors">Community</button>
-              <button className="hover:text-black transition-colors">GitHub</button>
+        {/* Navbar */}
+        <div className="sticky top-4 z-50 px-4">
+          <nav
+            className="max-w-5xl mx-auto flex items-center justify-between px-5 py-3"
+            style={{
+              background: "#F7F1E1",
+              border: `3px solid ${COLORS.border}`,
+              boxShadow: `5px 5px 0px ${COLORS.border}`,
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <IconMac size={26} />
+              <span className="font-bold text-sm" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                FABION
+              </span>
+              <span style={{ color: COLORS.yellow, fontSize: "10px" }}>✦</span>
             </div>
-            <button
+            <div className="hidden md:flex gap-6 text-[10px] uppercase tracking-widest">
+              <button onClick={() => scrollTo("features")} className="hover:text-blue-600 transition-colors">Features</button>
+              <button onClick={() => scrollTo("models")} className="hover:text-blue-600 transition-colors">Models</button>
+              <button onClick={() => scrollTo("pricing")} className="hover:text-blue-600 transition-colors">Pricing</button>
+              <button onClick={() => scrollTo("memes")} className="hover:text-blue-600 transition-colors">Memes</button>
+            </div>
+            <PixelButton
               onClick={() => {
-                setAuthMode(false);
+                setAuthMode(true);
                 setAuthOpen(true);
               }}
-              className="bg-black text-white text-sm px-5 py-2 rounded-md hover:-translate-y-0.5 transition-transform"
-              style={{ boxShadow: "inset 0 -2px 0 rgba(255,255,255,0.15)" }}
+              className="text-[9px] px-4 py-2"
             >
-              Login
-            </button>
-          </div>
-        </nav>
+              Try Fabion →
+            </PixelButton>
+          </nav>
+        </div>
 
-        {/* Desktop area */}
-        <div className="relative max-w-[1400px] mx-auto px-6" style={{ minHeight: "900px" }}>
-          <TerminalWindow />
-          <BrainstormWindow />
-          <BuildPreviewWindow />
-          <AgentLogsWindow />
-          <PreviewVideoWindow />
-          <TaskCompletedWindow />
-          <MusicPlayerWindow />
-          <PixelRobotWindow />
-
-          <StickyNote text="Need better auth..." rotate={-3} style={{ top: "300px", right: "40px" }} colorClass="bg-[#ffd6dd]" />
-          <StickyNote text="Should support plugins." rotate={2} style={{ bottom: "130px", right: "350px" }} colorClass="bg-[#fdf6a8]" />
-          <StickyNote text="Idea generated in 2.4 seconds." rotate={-2} style={{ bottom: "60px", left: "550px" }} colorClass="bg-[#c9e8ff]" />
-
-          <PixelDecor emoji="☁️" style={{ top: "110px", left: "380px" }} animate="floatSlow 6s ease-in-out infinite" />
-          <PixelDecor emoji="🐱" style={{ top: "220px", left: "390px" }} />
-          <PixelDecor emoji="⭐" style={{ top: "220px", right: "310px" }} />
-          <PixelDecor emoji="🌳" style={{ top: "120px", right: "20px" }} />
-          <PixelDecor emoji="📁" style={{ top: "360px", left: "395px" }} className="text-2xl" />
-          <PixelDecor emoji="🦆" style={{ top: "480px", right: "230px" }} animate="duckWaddle 4s ease-in-out infinite" />
-          <PixelDecor emoji="☕" style={{ top: "380px", left: "80px" }} />
-          <PixelDecor emoji="🌸" style={{ bottom: "80px", left: "150px" }} />
-          <PixelDecor emoji="🎮" style={{ bottom: "170px", left: "220px" }} />
-          <PixelDecor emoji="💾" style={{ bottom: "40px", right: "480px" }} />
-          <PixelDecor emoji="🖥️" style={{ bottom: "80px", right: "80px" }} />
-          <PixelDecor emoji="🍄" style={{ bottom: "60px", right: "230px" }} className="text-2xl" />
-          <PixelDecor emoji="🗑️" style={{ bottom: "160px", left: "80px" }} />
-
-          {/* Coffee steam */}
-          <div className="absolute hidden md:block" style={{ top: "365px", left: "100px" }}>
-            <div className="w-1 h-2 bg-[#ccc] rounded-full" style={{ animation: "steamRise 2s ease-in-out infinite" }} />
-          </div>
-
-          {/* Hero */}
-          <div className="relative z-20 flex flex-col items-center justify-center pt-16 pb-10 text-center">
+        {/* Hero */}
+        <section className="max-w-5xl mx-auto px-6 pt-20 pb-24 grid md:grid-cols-2 gap-10 items-center relative">
+          <Sparkle style={{ top: "10px", left: "20px" }} />
+          <Sparkle style={{ bottom: "40px", left: "60%" }} />
+          <div>
             <h1
-              className="mb-6"
-              style={{
-                fontFamily: "'Press Start 2P', monospace",
-                fontSize: "clamp(40px, 8vw, 92px)",
-                lineHeight: 1.15,
-                letterSpacing: "-1px",
-              }}
+              className="text-4xl md:text-5xl leading-tight mb-6"
+              style={{ fontFamily: "'Press Start 2P', monospace", letterSpacing: "1px" }}
             >
-              Fabion
+              Welcome to <span style={{ color: COLORS.blue }}>Fabion</span>
+              <span style={{ color: COLORS.yellow }}>+</span>
             </h1>
-            <p className="text-lg md:text-xl text-[#4a463c] max-w-xl mb-10">
-              The AI agent that actually builds.
-              <br />
-              Apps. Games. Automations. <span className="underline">Anything.</span>
+            <p className="text-base text-[#5c5343] mb-8 leading-relaxed">
+              The ultimate retro studio for modern developers.
             </p>
-
-            <div className="flex gap-4 flex-wrap justify-center">
-              <button
+            <div className="flex gap-4 flex-wrap">
+              <PixelButton
                 onClick={() => {
                   setAuthMode(true);
                   setAuthOpen(true);
                 }}
-                className="flex items-center gap-2 bg-black text-white px-6 py-3 rounded-md text-sm font-medium hover:-translate-y-0.5 transition-transform"
-                style={{ boxShadow: "0 3px 0 rgba(0,0,0,0.25)" }}
               >
-                ↗ Start Building
-              </button>
-              <button
-                onClick={scrollToModels}
-                className="flex items-center gap-2 bg-white border border-[#ddd8ca] text-black px-6 py-3 rounded-md text-sm font-medium hover:-translate-y-0.5 transition-transform"
-                style={{ boxShadow: "0 3px 0 rgba(0,0,0,0.06)" }}
-              >
-                ▶ Watch Demo
-              </button>
+                Get Started
+              </PixelButton>
+              <PixelButton variant="secondary" onClick={() => scrollTo("models")}>
+                Explore Models
+              </PixelButton>
             </div>
           </div>
-        </div>
-
-        {/* Models section (kept from before, restyled to match) */}
-        <section id="models" className="relative z-20 py-32 px-8 max-w-5xl mx-auto border-t border-[#e4dfd0]">
-          <h2 className="text-3xl mb-16 font-semibold text-center">Three models. One intelligence.</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { name: "Thread", logo: "/thread-logo.png", desc: "Ultra-fast reasoning for quick, direct answers." },
-              { name: "Pixel", logo: "/pixel-logo.png", desc: "Sharp, structured, and precise — built for code." },
-              { name: "Cell", logo: "/cell-logo.png", desc: "Creative, multi-step reasoning for complex problems." },
-            ].map((m) => (
-              <div
-                key={m.name}
-                className="bg-white border border-[#e4dfd0] rounded-[10px] p-6 hover:-translate-y-1 transition-transform"
-                style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-              >
-                <img src={m.logo} alt={m.name} className="w-20 h-20 object-contain mb-4 mx-auto" />
-                <h3 className="text-lg font-semibold mb-2 text-center">{m.name}</h3>
-                <p className="text-sm text-[#5c584c] text-center">{m.desc}</p>
-              </div>
-            ))}
+          <div className="relative flex items-center justify-center">
+            <div style={{ animation: "floatPixel 4s ease-in-out infinite" }}>
+              <IconMac size={180} />
+            </div>
+            <div className="absolute -bottom-2 -left-6">
+              <PlantIcon size={48} />
+            </div>
+            <div className="absolute bottom-6 -right-4">
+              <MugIcon size={34} />
+            </div>
+            <Sparkle style={{ top: "0px", right: "0px" }} />
+            <Sparkle style={{ bottom: "60px", left: "-10px" }} />
           </div>
         </section>
 
-        <footer className="relative z-20 py-16 text-center text-xs text-[#8a8578] border-t border-[#e4dfd0]">
-          © 2026 Fabion. All rights reserved.
+        {/* Features */}
+        <section id="features" className="max-w-5xl mx-auto px-6 py-24">
+          <h2 className="text-2xl mb-3" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+            Features
+          </h2>
+          <p className="text-sm text-[#5c5343] mb-12">Everything you need to build, ship, and scale faster.</p>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <FeatureCard
+              icon={<IconBolt />}
+              title="Instant Deploy"
+              desc="Deploy your application in seconds. Zero configuration, zero hassle."
+              preview={
+                <div className="mt-4 p-3 bg-[#1a1410] text-[#7ABF6B] text-[10px] font-mono">
+                  $ fabion deploy
+                  <br />✓ Deployed in 2.3s
+                </div>
+              }
+            />
+            <FeatureCard
+              icon={<IconPalette />}
+              title="Custom UI Theme Engine"
+              desc="Create and customize beautiful themes with our powerful theme engine."
+              preview={
+                <div className="mt-4 flex gap-2">
+                  {[COLORS.pink, COLORS.yellow, COLORS.border, COLORS.green].map((c) => (
+                    <div key={c} className="w-6 h-6" style={{ background: c, border: `1.5px solid ${COLORS.border}` }} />
+                  ))}
+                </div>
+              }
+            />
+            <FeatureCard
+              icon={<IconBrain />}
+              title="AI-Powered Code Optimization"
+              desc="Get smart suggestions, refactors, and performance improvements."
+              preview={
+                <div className="mt-4 p-3 bg-[#1a1410] text-[#EAE2C8] text-[9px] font-mono leading-relaxed">
+                  // AI Suggestion
+                  <br />
+                  for (let i = 0; i &lt; n; i++) {"{"}
+                  <br />
+                  &nbsp;&nbsp;doSomething(i);
+                  <br />
+                  {"}"}
+                </div>
+              }
+            />
+            <FeatureCard
+              icon={<IconStar />}
+              title="Developer First"
+              desc="Built by developers, for developers. Clean, fast, and reliable."
+              preview={
+                <div className="mt-4 text-[10px] text-[#5c5343]" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                  Developers Love Fabion
+                </div>
+              }
+            />
+          </div>
+        </section>
+
+        {/* Models */}
+        <section id="models" className="max-w-5xl mx-auto px-6 py-24">
+          <h2 className="text-2xl mb-3" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+            Our Models
+          </h2>
+          <p className="text-sm text-[#5c5343] mb-12">Three specialized models. One powerful studio.</p>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <ModelCard
+              icon={<IconCloud />}
+              name="Thread"
+              tag="For Speed"
+              accent={COLORS.blue}
+              desc="Ultra-fast responses. Instant answers. Lowest latency of any model on Fabion."
+            />
+            <ModelCard
+              icon={<IconCode />}
+              name="Pixel"
+              tag="For Coding"
+              accent={COLORS.green}
+              desc="Writes code, debugs, explains, and builds full apps — your AI pair programmer."
+            />
+            <ModelCard
+              icon={<IconFlower />}
+              name="Cell"
+              tag="For Daily Questions"
+              accent={COLORS.pink}
+              desc="General knowledge, writing, school, ideas, and conversation — for everything else."
+            />
+          </div>
+        </section>
+
+        {/* Pricing */}
+        <section id="pricing" className="max-w-5xl mx-auto px-6 py-24">
+          <h2 className="text-2xl mb-3" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+            Pricing
+          </h2>
+          <p className="text-sm text-[#5c5343] mb-16">Simple pricing for every developer. Start free, scale when you grow.</p>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-24">
+            <PricingCard
+              name="Basic"
+              price="$0"
+              cta="Get Started Free"
+              features={[
+                "1 Project",
+                "Community Support",
+                "Basic Features",
+                "Standard Model Access (Cell 1.0)",
+                "Up to 2,000 AI Messages / mo",
+              ]}
+            />
+            <PricingCard
+              name="Pro"
+              price="$19"
+              cta="Upgrade to Pro"
+              highlighted
+              badge
+              features={[
+                "Unlimited Projects",
+                "Priority Support",
+                "All Models Access (Pixel, Thread, Cell)",
+                "Up to 50,000 AI Messages / mo",
+                "File Storage (10GB)",
+                "Custom Domains",
+              ]}
+            />
+            <PricingCard
+              name="Studio"
+              price="$49"
+              cta="Upgrade to Studio"
+              features={[
+                "Everything in Pro",
+                "Team Collaboration",
+                "Advanced Analytics",
+                "White-Label Options",
+                "Unlimited File Storage",
+                "Dedicated Support",
+              ]}
+            />
+          </div>
+
+          {/* Comparison table */}
+          <PixelBorder className="p-6 mb-16 overflow-x-auto">
+            <table className="w-full text-xs min-w-[500px]">
+              <thead>
+                <tr style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "9px" }}>
+                  <th className="text-left pb-4">Feature</th>
+                  <th className="pb-4">Basic</th>
+                  <th className="pb-4">Pro</th>
+                  <th className="pb-4">Studio</th>
+                </tr>
+              </thead>
+              <tbody className="text-[#5c5343]">
+                {[
+                  ["Projects", "1", "Unlimited", "Unlimited"],
+                  ["Model Access", "Cell only", "All Models", "All Models"],
+                  ["AI Messages / mo", "2,000", "50,000", "Unlimited"],
+                  ["File Storage", "100MB", "10GB", "Unlimited"],
+                  ["Team Collaboration", "—", "—", "✓"],
+                ].map((row) => (
+                  <tr key={row[0]} className="border-t" style={{ borderColor: "#e0d8c0" }}>
+                    <td className="py-3 font-medium">{row[0]}</td>
+                    <td className="py-3 text-center">{row[1]}</td>
+                    <td className="py-3 text-center">{row[2]}</td>
+                    <td className="py-3 text-center">{row[3]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </PixelBorder>
+
+          {/* FAQ */}
+          <div className="space-y-3 max-w-2xl mx-auto">
+            <FAQItem q="Can I cancel anytime?" a="Yes — you can cancel your subscription at any time from your account settings, no questions asked." />
+            <FAQItem q="Do you offer refunds?" a="We offer a 14-day money-back guarantee on all paid plans." />
+            <FAQItem q="What models are included?" a="Basic includes Cell only. Pro and Studio include full access to Thread, Pixel, and Cell." />
+          </div>
+        </section>
+
+        {/* Meme / Terminal */}
+        <section id="memes" className="max-w-4xl mx-auto px-6 py-24">
+          <PixelBorder className="p-0 overflow-hidden">
+            <div className="flex items-center gap-2 px-4 py-2.5" style={{ background: "#1a1410" }}>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+              <span className="ml-2 text-[9px] text-[#EAE2C8]" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                Meme &amp; Wisdom
+              </span>
+            </div>
+            <div className="p-8 bg-[#1a1410] text-[#7ABF6B] font-mono text-sm leading-relaxed flex items-center justify-between gap-6">
+              <div>
+                <p className="mb-3">&quot;It worked on my machine.&quot;</p>
+                <p className="text-[#EAE2C8]/70 text-xs">
+                  &quot;I don&apos;t always test my code, but when I do, I do it in production.&quot;
+                </p>
+              </div>
+              <div className="shrink-0 hidden sm:block">
+                <svg width="56" height="56" viewBox="0 0 16 16" shapeRendering="crispEdges">
+                  <rect x="2" y="2" width="12" height="12" fill={COLORS.yellow} stroke={COLORS.border} strokeWidth="0.4" />
+                  <rect x="5" y="6" width="1" height="1" fill={COLORS.border} />
+                  <rect x="10" y="6" width="1" height="1" fill={COLORS.border} />
+                  <rect x="5" y="10" width="6" height="1" fill={COLORS.border} />
+                </svg>
+              </div>
+            </div>
+          </PixelBorder>
+        </section>
+
+        {/* Final CTA */}
+        <section className="max-w-5xl mx-auto px-6 py-16">
+          <PixelBorder className="p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+              <h3 className="text-lg mb-2" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                Ready to build something amazing?
+              </h3>
+              <p className="text-sm text-[#5c5343]">Join thousands of developers already using Fabion.</p>
+            </div>
+            <div className="flex gap-4 shrink-0">
+              <PixelButton
+                onClick={() => {
+                  setAuthMode(true);
+                  setAuthOpen(true);
+                }}
+              >
+                Get Started
+              </PixelButton>
+              <PixelButton variant="secondary" onClick={() => scrollTo("models")}>
+                Explore Models
+              </PixelButton>
+            </div>
+          </PixelBorder>
+        </section>
+
+        {/* Footer */}
+        <footer className="border-t-4 mt-8" style={{ borderColor: COLORS.border }}>
+          <div className="max-w-5xl mx-auto px-6 py-16 grid md:grid-cols-5 gap-10">
+            <div className="md:col-span-2">
+              <div className="flex items-center gap-2 mb-4">
+                <IconMac size={22} />
+                <span className="font-bold text-sm" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                  FABION
+                </span>
+              </div>
+              <div className="flex gap-4">
+                <span className="text-xs">GH</span>
+                <span className="text-xs">DC</span>
+                <span className="text-xs">TW</span>
+              </div>
+            </div>
+            {[
+              { h: "Product", items: ["Features", "Models", "Pricing"] },
+              { h: "Resources", items: ["Docs", "Changelog", "Blog"] },
+              { h: "Company", items: ["About", "Careers", "Contact"] },
+              { h: "Legal", items: ["Privacy", "Terms"] },
+            ].map((col) => (
+              <div key={col.h}>
+                <h4 className="text-[10px] uppercase tracking-widest mb-4" style={{ fontFamily: "'Press Start 2P', monospace" }}>
+                  {col.h}
+                </h4>
+                <ul className="space-y-2">
+                  {col.items.map((it) => (
+                    <li key={it} className="text-xs text-[#5c5343]">
+                      {it}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <div className="text-center text-[10px] text-[#8a8069] pb-8">
+            © 2026 Fabion Studio · Built for developers, by developers.
+          </div>
         </footer>
 
         <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} startInSignUp={authMode} />
