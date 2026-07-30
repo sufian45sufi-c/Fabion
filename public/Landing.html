@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fabion — An AI platform for creativity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#20201f;
+    --bg-soft:#262524;
+    --win-dark:#262523;
+    --win-dark-border:#3d3b37;
+    --win-dark-text:#e8e3d8;
+    --win-dark-muted:#9c9890;
+    --blue:#3d5cf0;
+    --blue-dark:#2540c2;
+    --blue-light:#7f95ff;
+    --orange:#e2823d;
+    --cream:#f3ebda;
+    --cream2:#efe2c8;
+    --ink:#141210;
+    --muted:#8f8f9a;
+    --green-dark:#2f5a24;
+    --green:#4a8a3a;
+    --border-blue:#3550d8;
+    --white:#ffffff;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html{ scroll-behavior:smooth; scroll-padding-top:90px; }
+
+  /* ---------- scroll reveal ---------- */
+  .reveal{
+    opacity:0;
+    transform:translateY(36px);
+    transition:opacity .8s cubic-bezier(.16,.8,.3,1), transform .8s cubic-bezier(.16,.8,.3,1);
+    will-change:opacity, transform;
+  }
+  .reveal.in-view{ opacity:1; transform:translateY(0); }
+  .reveal-scale{ opacity:0; transform:translateY(24px) scale(.96); transition:opacity .7s cubic-bezier(.16,.8,.3,1), transform .7s cubic-bezier(.16,.8,.3,1); }
+  .reveal-scale.in-view{ opacity:1; transform:translateY(0) scale(1); }
+
+  .hero-right .float-win{ transition:transform .35s cubic-bezier(.22,1,.36,1); }
+  .hero-flowers .cluster{ transition:transform .3s ease; }
+
+  body{
+    background:var(--bg);
+    color:var(--cream);
+    font-family:'JetBrains Mono', ui-monospace, 'Courier New', monospace;
+    overflow-x:hidden;
+    image-rendering:pixelated;
+  }
+
+  .pixel-font{
+    font-family:'Press Start 2P', 'JetBrains Mono', monospace;
+  }
+
+  a{ color:inherit; text-decoration:none; }
+
+  ::selection{ background:var(--blue); color:var(--white); }
+
+  /* ---------- background scatter ---------- */
+  .scatter{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+  .deco{ position:absolute; font-family:'Press Start 2P',monospace; line-height:1; user-select:none; }
+  .deco.blue{ color:var(--blue-light); opacity:.55; }
+  .deco.orange{ color:var(--orange); opacity:.6; }
+  .deco.white{ color:var(--muted); opacity:.4; }
+
+  /* ---------- shared containers ---------- */
+  .wrap{ max-width:1440px; margin:0 auto; padding:0 60px; position:relative; z-index:2; }
+  section{ position:relative; }
+
+  /* ---------- NAV ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    background:var(--bg);
+  }
+  .nav-inner{
+    max-width:1440px; margin:0 auto; padding:12px 60px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .logo{ display:flex; align-items:center; gap:14px; }
+  .logo-box{
+    width:32px; height:32px; background:var(--white); color:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Press Start 2P',monospace; font-size:14px;
+    border:2px solid var(--ink);
+  }
+  .logo-name{ font-family:'Press Start 2P',monospace; font-size:14px; letter-spacing:1px; color:var(--white); }
+
+  .nav-links{ display:flex; align-items:center; gap:42px; }
+  .nav-links a{
+    font-size:13px; letter-spacing:1.5px; color:var(--cream);
+    display:flex; align-items:center; gap:8px; font-weight:600;
+    transition:color .15s ease;
+  }
+  .nav-links a:hover{ color:var(--blue-light); }
+  .nav-links .plus{ font-family:'Press Start 2P',monospace; font-size:12px; }
+  .nav-links .plus.o{ color:var(--orange); }
+  .nav-links .plus.b{ color:var(--blue-light); }
+
+  .btn{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700; font-size:13px; letter-spacing:1px;
+    padding:14px 24px;
+    border:3px solid var(--ink);
+    cursor:pointer;
+    display:inline-flex; align-items:center; gap:10px;
+    box-shadow:5px 5px 0 0 var(--ink);
+    transition:transform .1s ease, box-shadow .1s ease;
+    background:var(--cream);
+    color:var(--ink);
+  }
+  .btn:hover{ transform:translate(2px,2px); box-shadow:3px 3px 0 0 var(--ink); }
+  .btn:active{ transform:translate(5px,5px); box-shadow:0 0 0 0 var(--ink); }
+
+  .btn.outline{
+    background:transparent; color:var(--cream); border-color:var(--cream);
+    box-shadow:5px 5px 0 0 var(--cream);
+  }
+  .btn.outline:hover{ box-shadow:3px 3px 0 0 var(--cream); }
+  .btn.outline:active{ box-shadow:0 0 0 0 var(--cream); }
+
+  .btn.nav-cta{
+    background:var(--white); border-color:var(--white); box-shadow:5px 5px 0 0 var(--blue);
+    padding:10px 20px;
+  }
+  .btn.nav-cta:hover{ box-shadow:3px 3px 0 0 var(--blue); }
+
+  .btn.dark{
+    background:var(--ink); color:var(--cream); border-color:var(--ink);
+    box-shadow:5px 5px 0 0 var(--blue);
+  }
+  .btn.dark:hover{ box-shadow:3px 3px 0 0 var(--blue); }
+
+  /* ---------- window chrome ---------- */
+  .win{
+    background:var(--cream);
+    border:3px solid var(--border-blue);
+    box-shadow:7px 7px 0 0 var(--blue-dark);
+    color:var(--ink);
+  }
+  .win-title{
+    background:var(--blue);
+    color:var(--white);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:9px 12px;
+    font-size:12px; font-weight:700; letter-spacing:.5px;
+    border-bottom:3px solid var(--border-blue);
+  }
+  .win-title .t{ display:flex; align-items:center; gap:8px; }
+  .win-title .dot{ width:9px; height:9px; background:var(--white); display:inline-block; }
+  .win-controls{ display:flex; gap:6px; }
+  .win-controls span{
+    width:16px; height:14px; background:var(--cream); border:2px solid var(--ink);
+    display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--ink); line-height:0;
+  }
+
+  /* ---------- pixel flower svg ---------- */
+  svg.pixel{ shape-rendering:crispEdges; }
+
+  /* ============================================================
+     HERO
+     ============================================================ */
+  .hero{ padding:90px 0 140px; overflow:hidden; }
+  .hero .wrap{ display:grid; grid-template-columns:1fr 1.15fr; gap:40px; align-items:start; }
+
+  .hero-left{ padding-top:30px; }
+  .eyebrow{
+    display:flex; align-items:center; gap:12px; color:var(--blue-light);
+    font-size:13px; letter-spacing:2px; font-weight:700; margin-bottom:26px;
+  }
+
+  .hero-title{
+    font-family:'Press Start 2P',monospace;
+    font-size:clamp(48px,6.4vw,92px);
+    line-height:1;
+    color:var(--cream);
+    text-shadow:6px 6px 0 var(--blue-dark);
+    margin-bottom:34px;
+    letter-spacing:2px;
+  }
+
+  .hero-sub{ font-size:19px; line-height:1.65; color:#cfc9bd; max-width:520px; margin-bottom:40px; }
+  .hero-sub .accent{ color:var(--blue-light); font-weight:700; }
+
+  .hero-ctas{ display:flex; gap:18px; margin-bottom:36px; flex-wrap:wrap; }
+
+  .hero-proof{ display:flex; align-items:center; gap:10px; font-size:13px; color:#b8b2a6; }
+  .heart-icon{ width:14px; height:12px; }
+
+  .hero-right{ position:relative; min-height:760px; }
+
+  .float-win{ position:absolute; }
+
+  .fw-mind{ top:0; right:0; width:480px; }
+  .fw-canvas{ top:250px; right:60px; width:640px; }
+  .fw-copilot{ top:590px; right:420px; width:420px; }
+  .fw-gen{ top:610px; right:0; width:390px; }
+
+  .mind-body{ display:flex; gap:0; }
+  .mind-sidebar{ width:190px; padding:18px 16px; border-right:2px solid #d8cdb0; font-size:12px; }
+  .mind-sidebar .root{ display:flex; align-items:center; justify-content:space-between; font-weight:700; margin-bottom:14px; }
+  .mind-sidebar .item{ display:flex; align-items:center; gap:8px; padding:7px 0; color:#4b453a; }
+  .mind-sidebar .item .ico{ width:12px; height:10px; background:var(--orange); flex:none; }
+  .mind-sidebar .item .badge{ margin-left:auto; background:#2c2a26; color:var(--cream); font-size:10px; padding:1px 6px; }
+  .mind-panels{ flex:1; display:flex; }
+  .mind-panel{ flex:1; padding:14px; border-right:2px solid #d8cdb0; }
+  .mind-panel:last-child{ border-right:none; }
+  .mind-thumb{ width:100%; aspect-ratio:4/3; border:2px solid #cabf9e; margin-bottom:10px; position:relative; overflow:hidden; }
+  .thumb-day{ background:linear-gradient(#bcd8ef 55%, #7fbf6d 55%); }
+  .thumb-day .tree-trunk{ position:absolute; bottom:20%; left:38%; width:6px; height:22px; background:#6a4327; }
+  .thumb-day .tree-top{ position:absolute; bottom:38%; left:30%; width:24px; height:20px; background:#3f7a34; }
+  .thumb-day .cloud{ position:absolute; top:14%; left:18%; width:26px; height:10px; background:#fff; }
+  .thumb-night{ background:#0e1030; }
+  .thumb-night i{ position:absolute; width:2px; height:2px; background:#fff; }
+  .mind-lines{ display:flex; flex-direction:column; gap:6px; }
+  .mind-lines .ln{ height:5px; background:#d9cfb2; }
+  .mind-lines .ln:nth-child(1){ width:80%; }
+  .mind-lines .ln:nth-child(2){ width:55%; }
+
+  .canvas-body{ display:flex; }
+  .canvas-tools{ width:52px; padding:14px 10px; border-right:2px solid #d8cdb0; display:flex; flex-direction:column; gap:14px; align-items:center; }
+  .tool{ width:30px; height:30px; border:2px solid #b9ad8c; display:flex; align-items:center; justify-content:center; }
+  .tool.active{ background:var(--blue); border-color:var(--blue-dark); }
+  .tool .shape{ width:12px; height:12px; }
+  .shape.sel{ border:2px dashed #6b6248; }
+  .tool.active .shape.sel{ border-color:var(--white); }
+  .shape.pencil{ background:#6b6248; clip-path:polygon(0 100%, 30% 100%, 100% 30%, 70% 0, 0 70%); }
+  .shape.eraser{ background:#6b6248; }
+  .shape.stamp{ border-radius:50%; border:2px solid #6b6248; background:transparent; }
+  .shape.layers{ background:transparent; border:2px solid #6b6248; transform:rotate(45deg); }
+  .shape.gear{ border-radius:50%; background:#6b6248; }
+  .shape.headset{ border:2px solid #6b6248; border-top:none; border-radius:0 0 6px 6px; background:transparent; }
+
+  .canvas-stage{ flex:1; padding:18px; display:flex; align-items:center; justify-content:center; background:
+    repeating-linear-gradient(0deg, transparent, transparent 19px, #e4dabd 19px, #e4dabd 20px),
+    repeating-linear-gradient(90deg, transparent, transparent 19px, #e4dabd 19px, #e4dabd 20px), var(--cream);
+  }
+  .canvas-select{ border:2px dashed #55524a; padding:16px; position:relative; }
+  .canvas-select::after{ content:''; position:absolute; right:-6px; bottom:-6px; width:8px; height:8px; background:var(--ink); }
+
+  .canvas-layers{ width:190px; border-left:2px solid #d8cdb0; padding:16px; font-size:12px; }
+  .canvas-layers h4{ font-size:11px; letter-spacing:1px; color:#7a715c; margin-bottom:10px; font-weight:700; }
+  .layer-row{ display:flex; align-items:center; gap:8px; padding:7px 0; }
+  .layer-row .sw{ width:12px; height:12px; flex:none; }
+  .layer-row .name{ flex:1; }
+  .eye{ width:15px; height:9px; border:2px solid #6b6248; border-radius:50%; position:relative; }
+  .eye::after{ content:''; position:absolute; inset:2px; margin:auto; width:3px; height:3px; background:#6b6248; }
+  .props-block{ margin-top:20px; border-top:2px solid #d8cdb0; padding-top:16px; }
+  .prop-row{ display:flex; justify-content:space-between; font-size:12px; padding:5px 0; color:#4b453a; }
+  .prop-row .val{ font-weight:700; color:var(--ink); }
+
+  .copilot-body{ padding:20px; }
+  .copilot-q{ font-weight:700; font-size:14px; margin-bottom:16px; }
+  .copilot-input{
+    display:flex; align-items:center; gap:10px;
+    border:2px solid #b9ad8c; background:#fff; padding:10px 12px;
+  }
+  .copilot-input input{
+    border:none; outline:none; flex:1; font-family:'JetBrains Mono',monospace; font-size:13px; background:transparent; color:#4b453a;
+  }
+  .copilot-input input::placeholder{ color:#9c937a; }
+  .send-btn{
+    width:30px; height:30px; background:var(--blue); flex:none;
+    display:flex; align-items:center; justify-content:center; border:2px solid var(--blue-dark);
+  }
+  .send-btn .arrow{ width:0; height:0; border-top:6px solid transparent; border-bottom:6px solid transparent; border-left:9px solid var(--white); }
+
+  .gen-body{ padding:22px; }
+  .gen-body .label{ font-weight:700; font-size:14px; margin-bottom:16px; }
+  .gen-bar-row{ display:flex; align-items:center; gap:14px; }
+  .gen-bar{ flex:1; height:16px; border:2px solid #b9ad8c; background:#e7dcbf; position:relative; overflow:hidden; }
+  .gen-bar .fill{ position:absolute; inset:0; width:72%; background:var(--blue); }
+  .gen-pct{ font-weight:700; font-size:13px; }
+
+  /* ---------- dark window variant (all hero windows except Fabion Mind) ---------- */
+  .win.dark{ background:var(--win-dark); color:var(--win-dark-text); box-shadow:7px 7px 0 0 var(--blue-dark); }
+
+  .win.dark .canvas-tools{ border-right-color:var(--win-dark-border); }
+  .win.dark .tool{ border-color:#514f4a; }
+  .win.dark .tool.active{ background:var(--blue); border-color:var(--blue-dark); }
+  .win.dark .shape.sel{ border-color:#c9c4b8; }
+  .win.dark .shape.pencil,
+  .win.dark .shape.eraser,
+  .win.dark .shape.gear{ background:#9c9890; }
+  .win.dark .shape.stamp,
+  .win.dark .shape.layers,
+  .win.dark .shape.headset{ border-color:#9c9890; }
+  .win.dark .tool.active .shape.sel{ border-color:var(--white); }
+
+  .win.dark .canvas-stage{
+    background:
+      repeating-linear-gradient(0deg, transparent, transparent 19px, #34322e 19px, #34322e 20px),
+      repeating-linear-gradient(90deg, transparent, transparent 19px, #34322e 19px, #34322e 20px),
+      var(--win-dark);
+  }
+  .win.dark .canvas-select{ border-color:#8a8578; }
+  .win.dark .canvas-select::after{ background:var(--win-dark-text); }
+
+  .win.dark .canvas-layers{ border-left-color:var(--win-dark-border); }
+  .win.dark .canvas-layers h4{ color:var(--win-dark-muted); }
+  .win.dark .eye{ border-color:#9c9890; }
+  .win.dark .eye::after{ background:#9c9890; }
+  .win.dark .props-block{ border-top-color:var(--win-dark-border); }
+  .win.dark .prop-row{ color:#c9c4b8; }
+  .win.dark .prop-row .val{ color:var(--win-dark-text); }
+
+  .win.dark .copilot-q{ color:var(--win-dark-text); }
+  .win.dark .copilot-input{ border-color:var(--win-dark-border); background:#1a1918; }
+  .win.dark .copilot-input input{ color:var(--win-dark-text); }
+  .win.dark .copilot-input input::placeholder{ color:#7d786d; }
+
+  .win.dark .gen-body .label{ color:var(--win-dark-text); }
+  .win.dark .gen-bar{ border-color:var(--win-dark-border); background:#1a1918; }
+
+  /* flowers scattered bottom of hero */
+  .hero-flowers{ position:absolute; bottom:-40px; left:0; right:0; display:flex; justify-content:space-between; padding:0 20px; z-index:1; pointer-events:none; }
+  .hero-flowers .cluster{ display:flex; align-items:flex-end; gap:8px; }
+
+  /* ============================================================
+     SECTION HEADERS (shared: Models / Pricing)
+     ============================================================ */
+  .section-head{ text-align:center; padding-top:110px; padding-bottom:64px; }
+  .badge-pill{
+    display:inline-flex; align-items:center; gap:10px;
+    border:2px solid #3a3a44; padding:9px 20px;
+    font-size:12px; letter-spacing:2px; font-weight:700; color:var(--cream);
+    margin-bottom:30px;
+  }
+  .badge-pill .plus{ color:var(--orange); font-family:'Press Start 2P',monospace; font-size:11px; }
+
+  .section-title{
+    font-size:clamp(30px,4vw,52px); font-weight:800; color:var(--cream); margin-bottom:20px; letter-spacing:.5px;
+  }
+  .section-title .accent{ color:var(--blue-light); }
+  .section-sub{ font-size:16px; color:#a29c8f; line-height:1.7; max-width:640px; margin:0 auto; }
+
+  /* ============================================================
+     MODELS
+     ============================================================ */
+  .models{ padding-bottom:150px; }
+  .model-row{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:36px; align-items:end;
+    max-width:1180px; margin:0 auto;
+  }
+  .model-card.thread{ margin-bottom:64px; }
+  .model-card.pixel{ }
+  .model-card.cell{ }
+
+  .model-body{ padding:26px 24px 24px; }
+  .model-icon{ width:48px; height:48px; margin-bottom:18px; display:flex; align-items:center; justify-content:center; }
+  .model-name{ font-size:30px; font-weight:800; color:var(--blue); margin-bottom:10px; }
+  .model-tag{ font-weight:700; font-size:14px; margin-bottom:6px; }
+  .model-desc{ font-size:13.5px; color:#5c5648; line-height:1.6; margin-bottom:18px; }
+  .model-divider{ border-top:1px dashed #c9bd9a; margin:18px 0; }
+
+  .checklist{ display:flex; flex-direction:column; gap:9px; margin-bottom:20px; }
+  .checklist .row{ display:flex; align-items:center; gap:10px; font-size:13px; color:#3a3626; }
+  .checkbox{ width:15px; height:15px; background:var(--blue); border:2px solid var(--blue-dark); flex:none; position:relative; }
+  .checkbox::after{ content:''; position:absolute; left:3px; top:1px; width:4px; height:7px; border:solid var(--white); border-width:0 2px 2px 0; transform:rotate(40deg); }
+
+  .code-block{
+    background:#161a22; border:2px solid #262b36; padding:12px 14px; font-size:12px; color:#c7cbd6; margin-bottom:12px;
+    line-height:1.7;
+  }
+  .code-block .ln{ color:#4b5163; margin-right:10px; }
+  .code-block .kw{ color:#7f95ff; }
+  .code-block .str{ color:#e2823d; }
+
+  .terminal{ background:#0d1016; border:2px solid #262b36; padding:12px 14px; font-size:12px; }
+  .terminal .prompt{ color:#8f8f9a; display:flex; justify-content:space-between; }
+  .terminal .status-dot{ width:8px; height:8px; background:#4fdc6b; border-radius:50%; display:inline-block; }
+  .terminal .hello{ color:#4fdc6b; margin-top:6px; }
+
+  .response-box{ border:2px solid #cabf9e; padding:16px; }
+  .response-box .label{ font-size:13px; font-weight:700; margin-bottom:12px; }
+  .response-row{ display:flex; align-items:center; gap:12px; }
+  .response-cells{ display:flex; gap:2px; flex:1; }
+  .response-cells i{ width:8px; height:16px; background:var(--blue); }
+  .response-cells i.dim{ background:#c9bd9a; }
+  .response-ms{ font-weight:700; color:var(--blue); font-size:13px; white-space:nowrap; }
+
+  .chat-bubble{
+    display:flex; align-items:center; gap:12px;
+    border:2px solid #cabf9e; padding:12px 14px; margin-top:4px;
+  }
+  .chat-avatar{ width:30px; height:30px; background:var(--blue); border:2px solid var(--blue-dark); flex:none; display:flex; align-items:center; justify-content:center; }
+  .chat-avatar .face{ width:14px; height:8px; border-bottom:2px solid var(--white); border-radius:0 0 8px 8px; }
+  .chat-text{ font-size:13px; flex:1; }
+  .chat-dots{ color:#9c937a; }
+
+  .switch-note{
+    text-align:center; max-width:640px; margin:20px auto 0;
+    border:1px dashed #3a3a44; padding:24px 30px;
+  }
+  .switch-note p{ font-size:14px; color:#a29c8f; line-height:1.7; margin-bottom:22px; }
+  .switch-chain{ display:flex; align-items:center; justify-content:center; gap:0; }
+  .chain-icon{ width:36px; height:36px; display:flex; align-items:center; justify-content:center; }
+  .chain-dash{ width:70px; border-top:2px dashed #4a4a56; }
+
+  /* ============================================================
+     PRICING
+     ============================================================ */
+  .pricing{ padding-bottom:150px; }
+  .price-row{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:34px;
+    max-width:1180px; margin:0 auto; align-items:start;
+  }
+  .price-card{ position:relative; }
+  .price-card.pro{ transform:translateY(-16px); }
+  .popular-tag{
+    position:absolute; top:-18px; left:50%; transform:translateX(-50%);
+    background:var(--blue); color:var(--white); font-size:11px; font-weight:700;
+    padding:8px 18px; letter-spacing:1.5px; border:2px solid var(--blue-dark); z-index:3;
+  }
+  .price-body{ padding:32px 28px 28px; }
+  .plan-name{ font-size:22px; font-weight:800; color:var(--ink); margin-bottom:18px; }
+  .plan-price{ display:flex; align-items:baseline; gap:6px; margin-bottom:20px; }
+  .plan-price .amt{ font-size:44px; font-weight:800; color:var(--ink); }
+  .plan-price .per{ font-size:14px; color:#8a836f; }
+  .plan-divider{ border-top:1px dashed #c9bd9a; margin-bottom:22px; }
+  .plan-features{ display:flex; flex-direction:column; gap:14px; margin-bottom:30px; }
+  .plan-features .row{ display:flex; align-items:center; gap:12px; font-size:13.5px; color:#3a3626; }
+  .plan-features .row .sq{ width:12px; height:12px; background:#5fa84a; flex:none; }
+  .footnote{ text-align:center; margin-top:56px; display:flex; align-items:center; justify-content:center; gap:10px; color:#a29c8f; font-size:14px; }
+
+  /* ---------- footer spacer ---------- */
+  footer.site{ padding:50px 0; text-align:center; color:#4a4a56; font-size:12px; border-top:1px solid #1c1c24; letter-spacing:1px; }
+
+  .win-controls span[data-action]{ cursor:pointer; transition:background .15s ease, color .15s ease; }
+  .win-controls span[data-action]:hover{ background:var(--ink); color:var(--cream); }
+
+  .model-card, .price-card, .review-card{
+    transition:transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s cubic-bezier(.22,1,.36,1), opacity .35s ease;
+  }
+  .model-card:hover, .review-card:hover, .price-card:hover:not(.pro){
+    transform:translate(-5px,-5px); box-shadow:11px 11px 0 0 var(--blue-dark);
+  }
+  .price-card.pro:hover{ transform:translateY(-16px) translate(-5px,-5px); box-shadow:11px 11px 0 0 var(--blue-dark); }
+
+  .app-chat-item{ transition:background .18s ease, transform .18s ease; }
+  .app-chat-item:hover{ background:#1a1a19; transform:translateX(3px); }
+  .app-model-row{ transition:border-color .18s ease, transform .18s ease; }
+  .app-model-row:hover{ border-color:var(--blue); transform:translateX(3px); }
+  .app-side-link{ transition:color .18s ease, transform .18s ease; }
+  .app-side-link:hover{ color:var(--white); transform:translateX(3px); }
+  .app-newchat{ transition:transform .18s ease, box-shadow .18s ease; }
+  .app-newchat:hover{ transform:translateY(-2px); }
+  .app-send, .send-btn, .app-icon-btn{ transition:transform .18s ease, background .18s ease; }
+  .app-send:hover, .send-btn:hover{ transform:scale(1.08); }
+  .app-icon-btn:hover{ transform:translateY(-2px); border-color:var(--blue); }
+  .file-showbtn{ transition:background .18s ease, color .18s ease; cursor:pointer; }
+  .file-showbtn:hover{ background:var(--blue); color:var(--white); }
+  .checklist .row, .plan-features .row, .layer-row{ transition:transform .15s ease; }
+  .checklist .row:hover, .plan-features .row:hover{ transform:translateX(3px); }
+  .app-preview{ padding:60px 0 150px; }
+  .app-frame{
+    display:flex; max-width:1240px; margin:0 auto;
+    border-radius:18px; overflow:hidden; border:1px solid #2c2b28;
+    height:780px;
+  }
+
+  /* sidebar */
+  .app-sidebar{
+    width:290px; flex:none; background:#141312;
+    border-right:1px solid #2a2926;
+    display:flex; flex-direction:column;
+    padding:22px 18px;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .app-side-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  .app-side-logo{ display:flex; align-items:center; gap:8px; font-family:'Press Start 2P',monospace; font-size:14px; color:var(--white); }
+  .app-side-logo .plus{ color:var(--orange); font-size:11px; }
+  .app-side-toggle{ width:28px; height:28px; border:2px solid #45443f; display:flex; align-items:center; justify-content:center; }
+  .app-side-toggle span{ width:12px; height:9px; border:2px solid #7c7a72; }
+
+  .app-newchat{
+    background:var(--blue); border:2px solid var(--blue-dark); color:var(--white);
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px;
+    padding:11px; display:flex; align-items:center; justify-content:center; gap:8px;
+    margin-bottom:22px; cursor:pointer;
+  }
+
+  .app-label{ font-size:10.5px; letter-spacing:1.5px; color:#716e64; font-weight:700; margin:4px 0 12px; }
+
+  .app-chats{ display:flex; flex-direction:column; gap:6px; margin-bottom:20px; }
+  .app-chat-item{
+    display:flex; gap:10px; padding:9px 10px; border:1px solid transparent; cursor:pointer;
+  }
+  .app-chat-item.active{ background:#1c2650; border-color:var(--blue); }
+  .app-chat-icon{ width:26px; height:26px; border:1px solid #3a3934; flex:none; display:flex; align-items:center; justify-content:center; color:#8a887e; font-size:12px; }
+  .app-chat-item.active .app-chat-icon{ border-color:var(--blue-light); color:var(--blue-light); }
+  .app-chat-body{ flex:1; min-width:0; }
+  .app-chat-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:3px; }
+  .app-chat-title{ font-size:12.5px; font-weight:700; color:#e8e3d8; }
+  .app-chat-time{ font-size:10px; color:#716e64; display:flex; align-items:center; gap:6px; white-space:nowrap; }
+  .app-chat-time .du{ width:6px; height:6px; border-radius:50%; }
+  .app-chat-sub{ font-size:11px; color:#716e64; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  .app-models{ display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+  .app-model-row{ display:flex; align-items:center; gap:10px; padding:9px 10px; border:1px solid #292824; }
+  .app-model-ic{ width:30px; height:30px; flex:none; display:flex; align-items:center; justify-content:center; }
+  .app-model-info{ flex:1; min-width:0; }
+  .app-model-info .nm{ font-size:12.5px; font-weight:700; color:#e8e3d8; }
+  .app-model-info .ds{ font-size:10.5px; color:#716e64; }
+  .app-model-v{ font-size:9.5px; font-weight:700; color:var(--blue-light); border:1px solid #33438f; padding:2px 6px; white-space:nowrap; }
+
+  .app-side-divider{ border-top:1px solid #292824; margin:4px 0 14px; }
+  .app-side-link{ display:flex; align-items:center; gap:10px; padding:9px 4px; font-size:12.5px; color:#c9c4b8; cursor:pointer; }
+  .app-side-link .ic{ width:22px; height:18px; border:1px solid #55534c; flex:none; }
+  .app-side-link .chev{ margin-left:auto; color:#716e64; }
+
+  .app-side-user{ margin-top:auto; display:flex; align-items:center; gap:10px; padding-top:16px; border-top:1px solid #292824; }
+  .app-user-avatar{ width:32px; height:32px; border:1px solid #55534c; flex:none; }
+  .app-user-info .un{ font-size:12.5px; font-weight:700; color:#e8e3d8; }
+  .app-user-info .up{ font-size:11px; color:var(--blue-light); }
+  .app-side-user .chev{ margin-left:auto; color:#716e64; }
+
+  /* main chat panel */
+  .app-main{ flex:1; min-width:0; background:var(--win-dark); display:flex; flex-direction:column; }
+  .app-main .win-title{ border-bottom:3px solid var(--border-blue); }
+  .app-chat-scroll{ flex:1; overflow:hidden; padding:26px 30px; position:relative; }
+
+  .msg-row{ display:flex; gap:14px; margin-bottom:26px; }
+  .msg-row.user{ flex-direction:row-reverse; }
+  .msg-avatar{ width:38px; height:38px; flex:none; border:2px solid #45443f; }
+  .msg-avatar.ai{ border-color:var(--blue-dark); }
+  .msg-col{ max-width:640px; }
+  .msg-row.user .msg-col{ display:flex; flex-direction:column; align-items:flex-end; }
+  .msg-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12px; }
+  .msg-name{ font-weight:700; color:var(--blue-light); }
+  .msg-time{ color:#716e64; }
+  .msg-bubble{ border:2px solid #45443f; padding:14px 16px; font-size:13.5px; color:#c9c4b8; line-height:1.6; }
+  .msg-text{ font-size:13.5px; color:#c9c4b8; line-height:1.75; }
+  .msg-text p{ margin-bottom:10px; }
+  .msg-bullets{ display:flex; flex-direction:column; gap:8px; margin:10px 0 14px; }
+  .msg-bullets .b{ display:flex; align-items:center; gap:10px; font-size:13px; color:#c9c4b8; }
+  .msg-bullets .sq{ width:9px; height:9px; background:var(--blue); flex:none; }
+
+  .file-card{ border:2px solid var(--border-blue); margin:16px 0; }
+  .file-head{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; border-bottom:1px solid #33322d; }
+  .file-head .fname{ color:var(--blue-light); font-weight:700; font-size:13px; }
+  .file-showbtn{ border:1px solid var(--border-blue); color:#c9c4b8; font-size:11px; padding:6px 10px; display:flex; align-items:center; gap:6px; }
+  .file-body{ display:flex; height:200px; }
+  .file-list{ width:170px; border-right:1px solid #33322d; padding:10px; display:flex; flex-direction:column; gap:9px; }
+  .file-list .fi{ display:flex; align-items:center; gap:8px; font-size:12px; color:#a8a396; }
+  .file-swatch{ width:12px; height:12px; flex:none; }
+  .code-pane{ flex:1; padding:10px 14px; font-size:11.5px; overflow:hidden; }
+  .code-tab{ display:flex; align-items:center; gap:8px; font-size:12px; color:#c9c4b8; margin-bottom:10px; }
+  .code-lines{ display:flex; flex-direction:column; gap:5px; color:#c7cbd6; }
+  .code-lines .ln{ color:#4b5163; margin-right:10px; }
+  .code-lines .tag{ color:#7f95ff; }
+  .code-lines .attr{ color:#e2823d; }
+  .code-lines .str2{ color:#4fdc6b; }
+
+  .gen-card{ display:flex; align-items:center; gap:16px; border:2px solid var(--border-blue); padding:16px 18px; margin-top:10px; }
+  .gen-card .gicon{ width:36px; height:36px; border:1px solid #45443f; flex:none; }
+  .gen-card .gtext{ flex:1; }
+  .gen-card .gtitle-row{ display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:#e8e3d8; margin-bottom:8px; }
+  .gen-card .gsub{ font-size:11.5px; color:#716e64; margin-top:6px; }
+
+  .app-input-bar{ border-top:1px solid #33322d; padding:18px 24px; }
+  .app-input-row{ display:flex; align-items:center; gap:10px; border:2px solid var(--border-blue); padding:12px 14px; }
+  .app-input-row input{ flex:1; background:transparent; border:none; outline:none; color:#e8e3d8; font-family:'JetBrains Mono',monospace; font-size:13px; }
+  .app-input-row input::placeholder{ color:#716e64; }
+  .app-icon-btn{ width:30px; height:30px; border:1px solid #45443f; display:flex; align-items:center; justify-content:center; color:#a8a396; flex:none; }
+  .app-send{ width:32px; height:32px; background:var(--blue); border:2px solid var(--blue-dark); flex:none; display:flex; align-items:center; justify-content:center; }
+  .app-disclaimer{ text-align:center; font-size:10.5px; color:#5a584f; margin-top:12px; }
+
+  @media (max-width:1000px){
+    .app-frame{ flex-direction:column; height:auto; }
+    .app-sidebar{ width:100%; border-right:none; border-bottom:1px solid #2a2926; }
+  }
+
+  /* ---------- reviews ---------- */
+  .reviews{ padding:150px 0 150px; }
+  .reviews-eyebrow{ display:flex; align-items:center; gap:16px; margin-bottom:26px; }
+  .reviews-eyebrow .label{ font-family:'JetBrains Mono',monospace; font-weight:800; font-size:19px; letter-spacing:3px; color:var(--blue-light); }
+  .reviews-title{ font-size:clamp(22px,2.4vw,28px); color:var(--cream); font-weight:600; margin-bottom:74px; }
+
+  .reviews-row{
+    position:relative;
+    display:grid; grid-template-columns:1fr 64px 1fr 64px 1fr;
+    align-items:stretch;
+    max-width:1240px; margin:0 auto;
+  }
+  .chain-connector{
+    position:relative; display:flex; flex-direction:column; align-items:center; justify-content:space-between;
+    padding:70px 0;
+  }
+  .chain-connector::before{
+    content:''; position:absolute; top:0; bottom:0; left:50%; width:0;
+    border-left:3px dashed #5a4f6b; opacity:.55;
+  }
+  .chain-connector .charm{ position:relative; z-index:2; background:transparent; }
+
+  .review-body{ padding:26px 26px 24px; }
+  .reviewer{ display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; }
+  .avatar-frame{ width:64px; height:64px; border:2px solid #b9ad8c; flex:none; background:#e7dcbf; display:flex; align-items:center; justify-content:center; }
+  .reviewer-info .r-name{ font-size:19px; font-weight:800; color:var(--ink); margin-bottom:4px; }
+  .reviewer-info .r-role{ font-size:12px; color:#8a8370; margin-bottom:9px; }
+  .r-stars{ display:flex; gap:4px; }
+
+  .review-divider{ border-top:1px dashed #c9bd9a; margin:0 0 18px; }
+  .review-quote{ font-size:14px; line-height:1.75; color:#3a3626; margin-bottom:24px; }
+  .review-likes{ display:flex; align-items:center; gap:9px; font-size:14px; color:#8a8370; font-weight:700; }
+
+  @media (max-width:1100px){
+    .reviews-row{ grid-template-columns:1fr; gap:36px; }
+    .chain-connector{ display:none; }
+  }
+
+  /* ---------- pixel matrix ---------- */
+  .matrix-section{ padding:20px 0 150px; }
+  .matrix-panel{
+    position:relative;
+    width:100%;
+    aspect-ratio:2.6/1;
+    min-height:260px;
+    max-height:480px;
+    border-radius:26px;
+    border:1px solid #37362f;
+    background:#20201f;
+    overflow:hidden;
+    cursor:none;
+  }
+  .matrix-panel canvas{ display:block; width:100%; height:100%; }
+  .matrix-cursor{
+    position:absolute; width:14px; height:14px; border-radius:50%;
+    border:1px solid rgba(255,255,255,.35); pointer-events:none;
+    transform:translate(-50%,-50%); opacity:0; transition:opacity .2s ease;
+    z-index:2;
+  }
+
+  /* ---------- pixel folder icon ---------- */
+  .folder{ position:absolute; top:34px; right:60px; width:44px; height:34px; z-index:5; }
+
+  @media (max-width:1100px){
+    .hero .wrap{ grid-template-columns:1fr; }
+    .hero-right{ display:none; }
+    .nav-links{ display:none; }
+    .model-row, .price-row{ grid-template-columns:1fr; max-width:520px; }
+    .model-card.thread, .price-card.pro{ margin-bottom:0; transform:none; }
+    .wrap{ padding:0 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAV
+============================================================ -->
+<header class="nav">
+  <div class="nav-inner">
+    <div class="logo">
+      <div class="logo-name">FABION</div>
+    </div>
+    <nav class="nav-links">
+      <a href="#models"><span class="plus o">+</span> MODELS</a>
+      <a href="#pricing"><span class="plus b">+</span> PRICING</a>
+      <a href="#">DOCS</a>
+      <a href="#">COMMUNITY</a>
+    </nav>
+    <button class="btn nav-cta">LAUNCH APP &gt;</button>
+  </div>
+</header>
+
+<!-- ============================================================
+     HERO
+============================================================ -->
+<section class="hero">
+  <div class="scatter" id="scatter-hero"></div>
+  <div class="folder" id="folder-hero"></div>
+
+  <div class="wrap">
+    <div class="hero-left">
+      <div class="eyebrow reveal" id="flower-eyebrow-slot" style="transition-delay:.05s">
+        <span>WELCOME TO FABION</span>
+      </div>
+      <h1 class="hero-title pixel-font reveal" style="transition-delay:.15s">FABION</h1>
+      <p class="hero-sub reveal" style="transition-delay:.25s">
+        An AI platform for <span class="accent">creativity</span>.<br>
+        Build, imagine, and bring anything to life with your AI co-pilot.
+      </p>
+      <div class="hero-ctas reveal" style="transition-delay:.35s">
+        <button class="btn">START CREATING FREE &gt;</button>
+        <button class="btn outline">EXPLORE MODELS</button>
+      </div>
+      <div class="hero-proof reveal" style="transition-delay:.45s">
+        <svg class="heart-icon pixel" viewBox="0 0 14 12"><g fill="#e2823d">
+          <rect x="2" y="1" width="2" height="1"/><rect x="1" y="2" width="1" height="2"/>
+          <rect x="2" y="4" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/>
+          <rect x="4" y="6" width="1" height="1"/><rect x="5" y="7" width="1" height="1"/>
+          <rect x="6" y="8" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/>
+          <rect x="8" y="8" width="1" height="1"/><rect x="9" y="7" width="1" height="1"/>
+          <rect x="10" y="6" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/>
+          <rect x="12" y="4" width="1" height="1"/><rect x="11" y="2" width="1" height="2"/>
+          <rect x="10" y="1" width="2" height="1"/><rect x="7" y="1" width="2" height="1"/>
+          <rect x="6" y="2" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/>
+        </g></svg>
+        <span>Loved by 10,000+ builders, creators, and dreamers.</span>
+      </div>
+    </div>
+
+    <div class="hero-right">
+
+      <!-- Fabion Mind window -->
+      <div class="float-win fw-mind win reveal-scale" style="transition-delay:.15s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>Fabion Mind</div>
+          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+        </div>
+        <div class="mind-body">
+          <div class="mind-sidebar">
+            <div class="root">Universe <span>&gt;</span></div>
+            <div class="item"><span class="ico"></span>Projects</div>
+            <div class="item"><span class="ico"></span>Ideas</div>
+            <div class="item"><span class="ico"></span>Notes</div>
+            <div class="item"><span class="ico"></span>Screenshots<span class="badge">24</span></div>
+          </div>
+          <div class="mind-panels">
+            <div class="mind-panel">
+              <div class="mind-thumb thumb-day">
+                <div class="cloud"></div><div class="tree-trunk"></div><div class="tree-top"></div>
+              </div>
+              <div class="mind-lines"><div class="ln"></div><div class="ln"></div></div>
+            </div>
+            <div class="mind-panel">
+              <div class="mind-thumb thumb-night" id="stars-slot"></div>
+              <div class="mind-lines"><div class="ln"></div><div class="ln"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Creative Canvas window -->
+      <div class="float-win fw-canvas win dark reveal-scale" style="transition-delay:.3s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>Creative Canvas</div>
+          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+        </div>
+        <div class="canvas-body">
+          <div class="canvas-tools">
+            <div class="tool active"><div class="shape sel"></div></div>
+            <div class="tool"><div class="shape pencil"></div></div>
+            <div class="tool"><div class="shape eraser"></div></div>
+            <div class="tool"><div class="shape stamp"></div></div>
+            <div class="tool"><div class="shape layers"></div></div>
+            <div class="tool"><div class="shape gear"></div></div>
+            <div class="tool"><div class="shape headset"></div></div>
+          </div>
+          <div class="canvas-stage">
+            <div class="canvas-select" id="canvas-flower-slot"></div>
+          </div>
+          <div class="canvas-layers">
+            <h4>LAYERS</h4>
+            <div class="layer-row"><span class="sw" style="background:var(--blue)"></span><span class="name">Flower</span><span class="eye"></span></div>
+            <div class="layer-row"><span class="sw" style="background:#4a8a3a"></span><span class="name">Leaves</span><span class="eye"></span></div>
+            <div class="layer-row"><span class="sw" style="background:#6b6248"></span><span class="name">Stem</span><span class="eye"></span></div>
+            <div class="layer-row"><span class="sw" style="background:#8a8272"></span><span class="name">Background</span><span class="eye"></span></div>
+            <div class="props-block">
+              <h4>PROPERTIES</h4>
+              <div class="prop-row"><span>Size</span><span class="val">32 x 32</span></div>
+              <div class="prop-row"><span>Style</span><span class="val">Pixel Art &#8964;</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Co-pilot window -->
+      <div class="float-win fw-copilot win dark reveal-scale" style="transition-delay:.45s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>AI Co-pilot</div>
+          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+        </div>
+        <div class="copilot-body">
+          <div class="copilot-q">How can I help you create today?</div>
+          <div class="copilot-input">
+            <input type="text" placeholder="Describe your idea..." disabled>
+            <div class="send-btn"><div class="arrow"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generating window -->
+      <div class="float-win fw-gen win dark reveal-scale" style="transition-delay:.55s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>Generating...</div>
+          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+        </div>
+        <div class="gen-body">
+          <div class="label">Building your idea</div>
+          <div class="gen-bar-row">
+            <div class="gen-bar"><div class="fill"></div></div>
+            <div class="gen-pct">72%</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="hero-flowers wrap" id="hero-flowers-slot"></div>
+</section>
+
+<!-- ============================================================
+     MODELS
+============================================================ -->
+<section class="models" id="models">
+  <div class="scatter" id="scatter-models"></div>
+  <div class="folder" id="folder-models"></div>
+
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="badge-pill"><span class="plus">+</span> MODELS</div>
+      <h2 class="section-title">Three models. One <span class="accent">creative</span> workflow.</h2>
+      <p class="section-sub">Every model is specialized for a different kind of work, so you always have the right AI for the task.</p>
+    </div>
+
+    <div class="model-row">
+
+      <!-- PIXEL -->
+      <div class="model-card pixel win reveal" id="win-pixel" style="transition-delay:.05s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>PIXEL 1.0</div>
+          <div class="win-controls"><span data-action="min">&#8211;</span><span data-action="max">&#9633;</span><span data-action="close">&#215;</span></div>
+        </div>
+        <div class="model-body">
+          <div class="model-icon" id="cube-icon-slot"></div>
+          <div class="model-name">Pixel</div>
+          <div class="model-tag">Your coding partner.</div>
+          <p class="model-desc">Build websites, apps, games, and full-stack products with production-ready code.</p>
+          <div class="model-divider"></div>
+          <div class="checklist">
+            <div class="row"><span class="checkbox"></span>Frontend</div>
+            <div class="row"><span class="checkbox"></span>Backend</div>
+            <div class="row"><span class="checkbox"></span>Debugging</div>
+            <div class="row"><span class="checkbox"></span>AI Agents</div>
+            <div class="row"><span class="checkbox"></span>Full Projects</div>
+          </div>
+          <div class="code-block">
+            <div><span class="ln">1</span><span class="kw">function</span> Fabion() {</div>
+            <div><span class="ln">2</span></div>
+            <div><span class="ln">3</span>&nbsp;&nbsp;<span class="kw">return</span> <span class="str">"Hello World"</span>;</div>
+            <div><span class="ln">4</span></div>
+            <div><span class="ln">5</span>}</div>
+            <div><span class="ln">6</span></div>
+          </div>
+          <div class="terminal">
+            <div class="prompt">&gt; Running Fabion... <span class="status-dot"></span></div>
+            <div class="hello">Hello World!</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- THREAD -->
+      <div class="model-card thread win reveal" id="win-thread" style="transition-delay:.15s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>THREAD 1.0</div>
+          <div class="win-controls"><span data-action="min">&#8211;</span><span data-action="max">&#9633;</span><span data-action="close">&#215;</span></div>
+        </div>
+        <div class="model-body">
+          <div class="model-icon" id="bolt-icon-slot"></div>
+          <div class="model-name">Thread</div>
+          <div class="model-tag">Built for speed.</div>
+          <p class="model-desc">Instant responses with ultra-low latency so ideas never stop flowing.</p>
+          <div class="model-divider"></div>
+          <div class="checklist">
+            <div class="row"><span class="checkbox"></span>Fastest model</div>
+            <div class="row"><span class="checkbox"></span>Instant brainstorming</div>
+            <div class="row"><span class="checkbox"></span>Quick research</div>
+            <div class="row"><span class="checkbox"></span>Fast conversations</div>
+          </div>
+          <div class="response-box">
+            <div class="label">Response Time</div>
+            <div class="response-row">
+              <div class="response-cells" id="resp-cells-slot"></div>
+              <div class="response-ms">12ms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CELL -->
+      <div class="model-card cell win reveal" id="win-cell" style="transition-delay:.25s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>CELL 1.0</div>
+          <div class="win-controls"><span data-action="min">&#8211;</span><span data-action="max">&#9633;</span><span data-action="close">&#215;</span></div>
+        </div>
+        <div class="model-body">
+          <div class="model-icon" id="flower-icon-slot"></div>
+          <div class="model-name">Cell</div>
+          <div class="model-tag">Your everyday AI.</div>
+          <p class="model-desc">Ask questions, summarize documents, write emails, learn faster, and stay organized.</p>
+          <div class="model-divider"></div>
+          <div class="checklist">
+            <div class="row"><span class="checkbox"></span>Writing</div>
+            <div class="row"><span class="checkbox"></span>Study</div>
+            <div class="row"><span class="checkbox"></span>Summaries</div>
+            <div class="row"><span class="checkbox"></span>Brainstorming</div>
+            <div class="row"><span class="checkbox"></span>Daily Help</div>
+          </div>
+          <div class="chat-bubble">
+            <div class="chat-avatar"><div class="face"></div></div>
+            <div class="chat-text">How can I help today?</div>
+            <div class="chat-dots">...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="switch-note reveal">
+      <p>Switch models instantly.<br>Or let Fabion automatically choose the best one.</p>
+      <div class="switch-chain">
+        <div class="chain-icon" id="chain-bolt-slot"></div>
+        <div class="chain-dash"></div>
+        <div class="chain-icon" id="chain-cube-slot"></div>
+        <div class="chain-dash"></div>
+        <div class="chain-icon" id="chain-flower-slot"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PRICING
+============================================================ -->
+<section class="pricing" id="pricing">
+  <div class="scatter" id="scatter-pricing"></div>
+
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="badge-pill"><span class="plus">+</span> PRICING</div>
+      <h2 class="section-title">Simple pricing for <span class="accent">every</span> builder.</h2>
+      <p class="section-sub">Start free. <span style="color:var(--blue-light)">Upgrade</span> when you grow.</p>
+    </div>
+
+    <div class="price-row">
+
+      <!-- Basic -->
+      <div class="price-card win reveal" style="transition-delay:.05s">
+        <div class="price-body">
+          <div class="plan-name">Basic</div>
+          <div class="plan-price"><span class="amt">$0</span><span class="per">/mo</span></div>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="row"><span class="sq"></span>1 Project</div>
+            <div class="row"><span class="sq"></span>Community Support</div>
+            <div class="row"><span class="sq"></span>Basic Features</div>
+            <div class="row"><span class="sq"></span>Standard Model Access (Cell 1.0)</div>
+            <div class="row"><span class="sq"></span>Up to 2,000 AI Messages / mo</div>
+          </div>
+          <button class="btn outline" style="width:100%; justify-content:center; color:var(--ink); border-color:var(--ink); box-shadow:5px 5px 0 0 var(--ink);">GET STARTED FREE</button>
+        </div>
+      </div>
+
+      <!-- Pro -->
+      <div class="price-card pro win reveal" style="transition-delay:.15s">
+        <div class="popular-tag">POPULAR</div>
+        <div class="price-body">
+          <div class="plan-name">Pro</div>
+          <div class="plan-price"><span class="amt">$19</span><span class="per">/mo</span></div>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="row"><span class="sq"></span>Unlimited Projects</div>
+            <div class="row"><span class="sq"></span>Priority Support</div>
+            <div class="row"><span class="sq"></span>All Models Access (Pixel, Thread, Cell)</div>
+            <div class="row"><span class="sq"></span>Up to 50,000 AI Messages / mo</div>
+            <div class="row"><span class="sq"></span>File Storage (10GB)</div>
+            <div class="row"><span class="sq"></span>Custom Domains</div>
+          </div>
+          <button class="btn dark" style="width:100%; justify-content:center;">UPGRADE TO PRO</button>
+        </div>
+      </div>
+
+      <!-- Studio -->
+      <div class="price-card win reveal" style="transition-delay:.25s">
+        <div class="price-body">
+          <div class="plan-name">Studio</div>
+          <div class="plan-price"><span class="amt">$49</span><span class="per">/mo</span></div>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="row"><span class="sq"></span>Everything in Pro</div>
+            <div class="row"><span class="sq"></span>Team Collaboration</div>
+            <div class="row"><span class="sq"></span>Advanced Analytics</div>
+            <div class="row"><span class="sq"></span>White-Label Options</div>
+            <div class="row"><span class="sq"></span>Unlimited File Storage</div>
+            <div class="row"><span class="sq"></span>Dedicated Support</div>
+          </div>
+          <button class="btn outline" style="width:100%; justify-content:center; color:var(--ink); border-color:var(--ink); box-shadow:5px 5px 0 0 var(--ink);">UPGRADE TO STUDIO</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footnote reveal">
+      <svg class="heart-icon pixel" viewBox="0 0 14 12"><g fill="#3d5cf0">
+        <rect x="2" y="1" width="2" height="1"/><rect x="1" y="2" width="1" height="2"/>
+        <rect x="2" y="4" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/>
+        <rect x="4" y="6" width="1" height="1"/><rect x="5" y="7" width="1" height="1"/>
+        <rect x="6" y="8" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/>
+        <rect x="8" y="8" width="1" height="1"/><rect x="9" y="7" width="1" height="1"/>
+        <rect x="10" y="6" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/>
+        <rect x="12" y="4" width="1" height="1"/><rect x="11" y="2" width="1" height="2"/>
+        <rect x="10" y="1" width="2" height="1"/><rect x="7" y="1" width="2" height="1"/>
+        <rect x="6" y="2" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/>
+      </g></svg>
+      <span>All plans include updates and new features.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     PIXEL MATRIX — living LED display
+============================================================ -->
+<section class="matrix-section" id="matrix">
+  <div class="wrap">
+    <div class="matrix-panel reveal-scale">
+      <canvas id="matrixCanvas"></canvas>
+      <div class="matrix-cursor" id="matrixCursor"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     REVIEWS
+============================================================ -->
+<section class="reviews" id="reviews">
+  <div class="wrap">
+    <div class="reviews-eyebrow reveal">
+      <div id="reviews-icon-slot"></div>
+      <div class="label">REVIEWS</div>
+    </div>
+    <p class="reviews-title reveal" style="transition-delay:.08s">Loved by builders, creators, and dreamers.</p>
+
+    <div class="reviews-row">
+
+      <div class="review-card win reveal" style="transition-delay:.05s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>Pixel Builder</div>
+          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+        </div>
+        <div class="review-body">
+          <div class="reviewer">
+            <div class="avatar-frame" id="avatar-alex"></div>
+            <div class="reviewer-info">
+              <div class="r-name">Alex R.</div>
+              <div class="r-role">Indie Developer</div>
+              <div class="r-stars" data-stars="alex"></div>
+            </div>
+          </div>
+          <div class="review-divider"></div>
+          <p class="review-quote">&ldquo;Fabion changed the way I build. The co-pilot actually understands what I'm trying to make. It's like having a real dev partner.&rdquo;</p>
+          <div class="review-likes" id="likes-alex"></div>
+        </div>
+      </div>
+
+      <div class="chain-connector reveal" style="transition-delay:.1s">
+        <div class="charm" id="charm-1a"></div>
+        <div class="charm" id="charm-1b"></div>
+      </div>
+
+      <div class="review-card win reveal" style="transition-delay:.15s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>Creative Coder</div>
+          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+        </div>
+        <div class="review-body">
+          <div class="reviewer">
+            <div class="avatar-frame" id="avatar-sara"></div>
+            <div class="reviewer-info">
+              <div class="r-name">Sara K.</div>
+              <div class="r-role">Product Designer</div>
+              <div class="r-stars" data-stars="sara"></div>
+            </div>
+          </div>
+          <div class="review-divider"></div>
+          <p class="review-quote">&ldquo;I can go from an idea to a working prototype in minutes. Fabion handles the boring stuff so I can focus on being creative.&rdquo;</p>
+          <div class="review-likes" id="likes-sara"></div>
+        </div>
+      </div>
+
+      <div class="chain-connector reveal" style="transition-delay:.2s">
+        <div class="charm" id="charm-2a"></div>
+        <div class="charm" id="charm-2b"></div>
+      </div>
+
+      <div class="review-card win reveal" style="transition-delay:.25s">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>Dreamer</div>
+          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+        </div>
+        <div class="review-body">
+          <div class="reviewer">
+            <div class="avatar-frame" id="avatar-omar"></div>
+            <div class="reviewer-info">
+              <div class="r-name">Omar N.</div>
+              <div class="r-role">Startup Founder</div>
+              <div class="r-stars" data-stars="omar"></div>
+            </div>
+          </div>
+          <div class="review-divider"></div>
+          <p class="review-quote">&ldquo;Finally, an AI tool that feels simple but powerful. Fabion helps me build faster and ship ideas people love. Game changer.&rdquo;</p>
+          <div class="review-likes" id="likes-omar"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     APP PREVIEW — Preview of UI
+============================================================ -->
+<section class="app-preview" id="preview">
+  <div class="wrap">
+    <div class="section-head reveal" style="padding-top:0;">
+      <div class="badge-pill"><span class="plus">+</span> PREVIEW</div>
+      <h2 class="section-title">Preview of UI</h2>
+      <p class="section-sub">A look inside the Fabion workspace &mdash; chats, models, and live code generation in one place.</p>
+    </div>
+
+    <div class="app-frame reveal-scale">
+
+      <!-- SIDEBAR -->
+      <aside class="app-sidebar">
+        <div class="app-side-head">
+          <div class="app-side-logo">FABION <span class="plus">+</span></div>
+          <div class="app-side-toggle"><span></span></div>
+        </div>
+
+        <button class="app-newchat"><span>+</span> New Chat</button>
+
+        <div class="app-label">CHATS</div>
+        <div class="app-chats">
+          <div class="app-chat-item active">
+            <div class="app-chat-icon" id="chat-ic-1"></div>
+            <div class="app-chat-body">
+              <div class="app-chat-top">
+                <span class="app-chat-title">Weather App</span>
+                <span class="app-chat-time"><span class="du" style="background:var(--blue)"></span>10:24 AM</span>
+              </div>
+              <div class="app-chat-sub">Create a weather app...</div>
+            </div>
+          </div>
+          <div class="app-chat-item">
+            <div class="app-chat-icon" id="chat-ic-2"></div>
+            <div class="app-chat-body">
+              <div class="app-chat-top">
+                <span class="app-chat-title">Landing Page</span>
+                <span class="app-chat-time">Yesterday<span class="du" style="background:var(--orange)"></span></span>
+              </div>
+              <div class="app-chat-sub">Design a landing page...</div>
+            </div>
+          </div>
+          <div class="app-chat-item">
+            <div class="app-chat-icon" id="chat-ic-3"></div>
+            <div class="app-chat-body">
+              <div class="app-chat-top">
+                <span class="app-chat-title">Todo App</span>
+                <span class="app-chat-time">2 days ago<span class="du" style="background:var(--blue)"></span></span>
+              </div>
+              <div class="app-chat-sub">Build a todo app...</div>
+            </div>
+          </div>
+          <div class="app-chat-item">
+            <div class="app-chat-icon" id="chat-ic-4"></div>
+            <div class="app-chat-body">
+              <div class="app-chat-top">
+                <span class="app-chat-title">AI Study Helper</span>
+                <span class="app-chat-time">3 days ago<span class="du" style="background:#8a887e"></span></span>
+              </div>
+              <div class="app-chat-sub">Best way to learn AI...</div>
+            </div>
+          </div>
+          <div class="app-chat-item">
+            <div class="app-chat-icon" id="chat-ic-5"></div>
+            <div class="app-chat-body">
+              <div class="app-chat-top">
+                <span class="app-chat-title">Dashboard UI</span>
+                <span class="app-chat-time">5 days ago<span class="du" style="background:var(--orange)"></span></span>
+              </div>
+              <div class="app-chat-sub">Analytics dashboard...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-label">FABION MODELS</div>
+        <div class="app-models">
+          <div class="app-model-row">
+            <div class="app-model-ic" id="side-cube"></div>
+            <div class="app-model-info"><div class="nm">PIXEL</div><div class="ds">Best at coding</div></div>
+            <div class="app-model-v">v1.0</div>
+          </div>
+          <div class="app-model-row">
+            <div class="app-model-ic" id="side-bolt"></div>
+            <div class="app-model-info"><div class="nm">THREAD</div><div class="ds">Ultra-fast responses</div></div>
+            <div class="app-model-v">v1.0</div>
+          </div>
+          <div class="app-model-row">
+            <div class="app-model-ic" id="side-flower"></div>
+            <div class="app-model-info"><div class="nm">CELL</div><div class="ds">For daily questions</div></div>
+            <div class="app-model-v">v1.0</div>
+          </div>
+        </div>
+
+        <div class="app-side-divider"></div>
+        <div class="app-side-link"><span class="ic"></span>Fabion Mind<span class="chev">&gt;</span></div>
+        <div class="app-side-link"><span class="ic"></span>Settings<span class="chev">&gt;</span></div>
+
+        <div class="app-side-user">
+          <div class="app-user-avatar" id="side-user-avatar"></div>
+          <div class="app-user-info"><div class="un">Sufian</div><div class="up">Pro Plan</div></div>
+          <span class="chev">&#8964;</span>
+        </div>
+      </aside>
+
+      <!-- MAIN CHAT PANEL -->
+      <div class="app-main win dark">
+        <div class="win-title">
+          <div class="t"><span class="dot"></span>AI Co-pilot</div>
+          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+        </div>
+
+        <div class="app-chat-scroll">
+          <div class="msg-row user">
+            <div class="msg-avatar" id="user-avatar"></div>
+            <div class="msg-col">
+              <div class="msg-head"><span class="msg-name">You</span><span class="msg-time">10:24 AM</span></div>
+              <div class="msg-bubble">Create a simple weather app with HTML, CSS and JavaScript.</div>
+            </div>
+          </div>
+
+          <div class="msg-row">
+            <div class="msg-avatar ai" id="ai-avatar"></div>
+            <div class="msg-col">
+              <div class="msg-head"><span class="msg-name">Fabion (Pixel)</span><span class="msg-time">10:25 AM</span></div>
+              <div class="msg-text">
+                <p>Sure! I'll build a simple and clean weather app for you.</p>
+                <p>Here's what I'll create:</p>
+                <div class="msg-bullets">
+                  <div class="b"><span class="sq"></span>Search city weather</div>
+                  <div class="b"><span class="sq"></span>Current temperature</div>
+                  <div class="b"><span class="sq"></span>Weather condition icon</div>
+                  <div class="b"><span class="sq"></span>Responsive design</div>
+                </div>
+                <p>Let me generate the code for you.</p>
+              </div>
+
+              <div class="file-card">
+                <div class="file-head">
+                  <span class="fname">weather-app</span>
+                  <span class="file-showbtn">Show files</span>
+                </div>
+                <div class="file-body">
+                  <div class="file-list">
+                    <div class="fi"><span class="file-swatch" style="background:var(--orange)"></span>index.html</div>
+                    <div class="fi"><span class="file-swatch" style="background:var(--blue)"></span>style.css</div>
+                    <div class="fi"><span class="file-swatch" style="background:#e8c750"></span>script.js</div>
+                    <div class="fi"><span class="file-swatch" style="background:#c9a86e"></span>assets/</div>
+                  </div>
+                  <div class="code-pane">
+                    <div class="code-tab">index.html</div>
+                    <div class="code-lines">
+                      <div><span class="ln">1</span>&lt;!DOCTYPE html&gt;</div>
+                      <div><span class="ln">2</span>&lt;<span class="tag">html</span> <span class="attr">lang</span>=<span class="str2">"en"</span>&gt;</div>
+                      <div><span class="ln">3</span>&lt;<span class="tag">head</span>&gt;</div>
+                      <div><span class="ln">4</span>&nbsp;&nbsp;&lt;<span class="tag">meta</span> <span class="attr">charset</span>=<span class="str2">"UTF-8"</span> /&gt;</div>
+                      <div><span class="ln">5</span>&nbsp;&nbsp;&lt;<span class="tag">meta</span> <span class="attr">name</span>=<span class="str2">"viewport"</span> ...&gt;</div>
+                      <div><span class="ln">6</span>&nbsp;&nbsp;&lt;<span class="tag">title</span>&gt;Weather App&lt;/<span class="tag">title</span>&gt;</div>
+                      <div><span class="ln">7</span>&nbsp;&nbsp;&lt;<span class="tag">link</span> <span class="attr">rel</span>=<span class="str2">"stylesheet"</span> /&gt;</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="gen-card">
+                <div class="gicon" id="gen-icon"></div>
+                <div class="gtext">
+                  <div class="gtitle-row"><span>Generating preview...</span><span>72%</span></div>
+                  <div class="gen-bar"><div class="fill"></div></div>
+                  <div class="gsub">Almost there...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="app-input-bar">
+          <div class="app-input-row">
+            <input type="text" placeholder="Ask anything..." disabled>
+            <div class="app-icon-btn">+</div>
+            <div class="app-icon-btn" id="gear-ic"></div>
+            <div class="app-send"><div class="arrow"></div></div>
+          </div>
+          <div class="app-disclaimer">Fabion can make mistakes. Consider checking important information.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="site">FABION &mdash; AN AI PLATFORM FOR CREATIVITY</footer>
+
+<script>
+/* ===================== pixel flower / icon generator ===================== */
+function pixelSVG(matrix, colors, w, h, size){
+  size = size || 24;
+  let rects = '';
+  for(let y=0;y<matrix.length;y++){
+    for(let x=0;x<matrix[y].length;x++){
+      const c = matrix[y][x];
+      if(c !== '.'){
+        rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${colors[c]}"/>`;
+      }
+    }
+  }
+  return `<svg class="pixel" viewBox="0 0 ${w} ${h}" width="${size}" height="${size*(h/w)}">${rects}</svg>`;
+}
+
+const FLOWER_MATRIX = [
+  "....PP..",
+  "...PPPP.",
+  "..PPWWPP",
+  "...PPPP.",
+  "....PP..",
+  "....SS..",
+  "..LSS...",
+  ".LLSS...",
+  "....SS..",
+  "...LSS.."
+];
+
+function flowerSVG(petal, size){
+  return pixelSVG(FLOWER_MATRIX, {P:petal, W:'#ffffff', S:'#2f5a24', L:'#4a8a3a'}, 8, 10, size);
+}
+
+const CUBE_MATRIX = [
+  "..TTTT..",
+  ".TTTTTT.",
+  "TTTTTTTT",
+  "TLLLLLRT",
+  "TLLLLLRT",
+  "TLLLLLRT",
+  ".TRRRRT.",
+  "..TTTT.."
+];
+function cubeSVG(size){
+  return pixelSVG(CUBE_MATRIX, {T:'#7f95ff', L:'#3d5cf0', R:'#2540c2'}, 8, 8, size);
+}
+
+const BOLT_MATRIX = [
+  ".....B..",
+  "....BB..",
+  "...BB...",
+  "..BBBBB.",
+  ".BBBB...",
+  "...BB...",
+  "..BB....",
+  ".BB....."
+];
+function boltSVG(size){
+  return pixelSVG(BOLT_MATRIX, {B:'#e2823d'}, 8, 8, size);
+}
+
+document.getElementById('canvas-flower-slot').innerHTML = flowerSVG('#3d5cf0', 220);
+document.getElementById('cube-icon-slot').innerHTML = cubeSVG(46);
+document.getElementById('bolt-icon-slot').innerHTML = boltSVG(46);
+document.getElementById('flower-icon-slot').innerHTML = flowerSVG('#d64bb0', 46);
+document.getElementById('chain-bolt-slot').innerHTML = boltSVG(30);
+document.getElementById('chain-cube-slot').innerHTML = cubeSVG(30);
+document.getElementById('chain-flower-slot').innerHTML = flowerSVG('#d64bb0', 30);
+
+/* hero flower clusters */
+const clusters = [
+  [ {c:'#e2823d', s:70}, {c:'#f3ebda', s:56} ],
+  [ {c:'#3d5cf0', s:78}, {c:'#3d5cf0', s:52} ]
+];
+const heroFlowers = document.getElementById('hero-flowers-slot');
+clusters.forEach((group, i)=>{
+  const div = document.createElement('div');
+  div.className = 'cluster';
+  if(i===1) div.style.marginLeft='auto';
+  group.forEach(fl=>{ div.innerHTML += flowerSVG(fl.c, fl.s); });
+  heroFlowers.appendChild(div);
+});
+
+/* eyebrow flower icon */
+document.getElementById('flower-eyebrow-slot').insertAdjacentHTML('afterbegin', flowerSVG('#3d5cf0', 20));
+
+/* response-time cells */
+const respCells = document.getElementById('resp-cells-slot');
+for(let i=0;i<16;i++){
+  const el = document.createElement('i');
+  if(i>13) el.classList.add('dim');
+  respCells.appendChild(el);
+}
+
+/* night stars */
+const starsSlot = document.getElementById('stars-slot');
+for(let i=0;i<14;i++){
+  const s = document.createElement('i');
+  s.style.left = (Math.random()*94+2)+'%';
+  s.style.top = (Math.random()*80+5)+'%';
+  starsSlot.appendChild(s);
+}
+
+/* pixel folder icon */
+const FOLDER_SVG = `<svg class="pixel" viewBox="0 0 22 17" width="44" height="34">
+  <rect x="0" y="2" width="9" height="2" fill="#d8bd8a"/>
+  <rect x="0" y="4" width="22" height="11" fill="#e8cd9a"/>
+  <rect x="0" y="4" width="22" height="2" fill="#f0dcb0"/>
+  <rect x="0" y="13" width="22" height="2" fill="#c9a86e"/>
+</svg>`;
+document.getElementById('folder-hero').innerHTML = FOLDER_SVG;
+document.getElementById('folder-models').innerHTML = FOLDER_SVG;
+
+/* scattered background crosses */
+function scatterDecor(id, count){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const colors = ['blue','orange','white'];
+  for(let i=0;i<count;i++){
+    const s = document.createElement('span');
+    s.className = 'deco ' + colors[Math.floor(Math.random()*colors.length)];
+    s.textContent = Math.random() > 0.75 ? '+' : '+';
+    s.style.left = (Math.random()*96+2) + '%';
+    s.style.top = (Math.random()*94+3) + '%';
+    s.style.fontSize = (Math.random()*10+8) + 'px';
+    el.appendChild(s);
+  }
+}
+scatterDecor('scatter-hero', 14);
+scatterDecor('scatter-models', 12);
+scatterDecor('scatter-pricing', 12);
+
+/* ===================== REVIEWS: avatars, stars, icons ===================== */
+const AVATAR_MATRIX = [
+  "..HHHHH..",
+  ".HHHHHHH.",
+  ".HFFFFFH.",
+  "HFFFFFFFH",
+  "HFFEFFEFH",
+  ".FFFFFFF.",
+  "..FFFFF..",
+  ".CCCCCCC.",
+  "CCCCCCCCC"
+];
+function avatarSVG(hair, skin, shirt, size){
+  return pixelSVG(AVATAR_MATRIX, {H:hair, F:skin, E:'#3a2c22', C:shirt}, 9, 9, size);
+}
+
+const STAR_MATRIX = [
+  "...S...",
+  "..SSS..",
+  "SSSSSSS",
+  ".SSSSS.",
+  "SS.S.SS"
+];
+function starSVG(color, size){
+  return pixelSVG(STAR_MATRIX, {S:color}, 7, 5, size);
+}
+
+document.getElementById('avatar-alex').innerHTML = avatarSVG('#241f1c', '#d9a468', '#3d5cf0', 58);
+document.getElementById('avatar-sara').innerHTML  = avatarSVG('#3b2418', '#e8bf94', '#4a8a3a', 58);
+document.getElementById('avatar-omar').innerHTML  = avatarSVG('#a3562b', '#d9a468', '#e2823d', 58);
+
+['alex','sara','omar'].forEach(name=>{
+  const row = document.querySelector(`[data-stars="${name}"]`);
+  for(let i=0;i<5;i++){ row.innerHTML += starSVG('#3d5cf0', 15); }
+});
+
+const HEART_SVG = `<svg class="heart-icon pixel" viewBox="0 0 14 12" width="15" height="13"><g fill="#e2823d">
+  <rect x="2" y="1" width="2" height="1"/><rect x="1" y="2" width="1" height="2"/>
+  <rect x="2" y="4" width="1" height="1"/><rect x="3" y="5" width="1" height="1"/>
+  <rect x="4" y="6" width="1" height="1"/><rect x="5" y="7" width="1" height="1"/>
+  <rect x="6" y="8" width="1" height="1"/><rect x="7" y="9" width="1" height="1"/>
+  <rect x="8" y="8" width="1" height="1"/><rect x="9" y="7" width="1" height="1"/>
+  <rect x="10" y="6" width="1" height="1"/><rect x="11" y="5" width="1" height="1"/>
+  <rect x="12" y="4" width="1" height="1"/><rect x="11" y="2" width="1" height="2"/>
+  <rect x="10" y="1" width="2" height="1"/><rect x="7" y="1" width="2" height="1"/>
+  <rect x="6" y="2" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/>
+</g></svg>`;
+document.getElementById('likes-alex').innerHTML = HEART_SVG + '<span>2.4k</span>';
+document.getElementById('likes-sara').innerHTML = HEART_SVG + '<span>1.8k</span>';
+document.getElementById('likes-omar').innerHTML = HEART_SVG + '<span>3.2k</span>';
+
+document.getElementById('charm-1a').innerHTML = starSVG('#3d5cf0', 22);
+document.getElementById('charm-1b').innerHTML = starSVG('#e2823d', 22);
+document.getElementById('charm-2a').innerHTML = starSVG('#9c9890', 22);
+document.getElementById('charm-2b').innerHTML = starSVG('#3d5cf0', 22);
+
+const CHAT_ICON_SVG = `<svg class="pixel" viewBox="0 0 22 20" width="40" height="36">
+  <rect x="2" y="2" width="18" height="13" fill="#3d5cf0"/>
+  <rect x="2" y="2" width="18" height="2" fill="#7f95ff"/>
+  <rect x="4" y="17" width="3" height="3" fill="#3d5cf0"/>
+  <rect x="6" y="7" width="2" height="3" fill="#ffffff"/>
+  <rect x="10" y="7" width="2" height="3" fill="#ffffff"/>
+  <rect x="14" y="7" width="2" height="3" fill="#ffffff"/>
+</svg>`;
+document.getElementById('reviews-icon-slot').innerHTML = CHAT_ICON_SVG;
+
+/* ===================== APP PREVIEW ICONS ===================== */
+function chatBubbleSVG(bg, size){
+  return `<svg class="pixel" viewBox="0 0 22 20" width="${size}" height="${Math.round(size*20/22)}">
+    <rect x="2" y="2" width="18" height="13" fill="${bg}"/>
+    <rect x="2" y="2" width="18" height="2" fill="#ffffff" opacity="0.35"/>
+    <rect x="4" y="17" width="3" height="3" fill="${bg}"/>
+    <rect x="6" y="7" width="2" height="3" fill="#ffffff"/>
+    <rect x="10" y="7" width="2" height="3" fill="#ffffff"/>
+    <rect x="14" y="7" width="2" height="3" fill="#ffffff"/>
+  </svg>`;
+}
+['chat-ic-1','chat-ic-2','chat-ic-3','chat-ic-4','chat-ic-5'].forEach(id=>{
+  document.getElementById(id).innerHTML = chatBubbleSVG('#3d5cf0', 16);
+});
+document.getElementById('side-cube').innerHTML = cubeSVG(26);
+document.getElementById('side-bolt').innerHTML = boltSVG(26);
+document.getElementById('side-flower').innerHTML = flowerSVG('#d64bb0', 26);
+document.getElementById('side-user-avatar').innerHTML = avatarSVG('#241f1c', '#d9a468', '#3d5cf0', 32);
+document.getElementById('user-avatar').innerHTML = avatarSVG('#241f1c', '#d9a468', '#3d5cf0', 38);
+document.getElementById('ai-avatar').innerHTML = chatBubbleSVG('#3d5cf0', 38);
+document.getElementById('gear-ic').innerHTML = `<svg class="pixel" viewBox="0 0 12 12" width="14" height="14"><g fill="#a8a396">
+  <rect x="5" y="0" width="2" height="2"/><rect x="5" y="10" width="2" height="2"/>
+  <rect x="0" y="5" width="2" height="2"/><rect x="10" y="5" width="2" height="2"/>
+  <rect x="1" y="1" width="2" height="2"/><rect x="9" y="1" width="2" height="2"/>
+  <rect x="1" y="9" width="2" height="2"/><rect x="9" y="9" width="2" height="2"/>
+  <rect x="3" y="3" width="6" height="6"/>
+</g><rect x="4.5" y="4.5" width="3" height="3" fill="#1a1918"/></svg>`;
+document.getElementById('gen-icon').innerHTML = `<svg class="pixel" viewBox="0 0 12 12" width="20" height="20">
+  <rect width="12" height="12" fill="#1a1918"/>
+  <rect x="2" y="3" width="8" height="1.5" fill="#4a8a3a"/>
+  <rect x="2" y="6" width="5" height="1.5" fill="#3d5cf0"/>
+  <rect x="2" y="8.5" width="6" height="1.5" fill="#716e64"/>
+</svg>`;
+
+
+/* ===================== scroll reveal ===================== */
+const revealEls = document.querySelectorAll('.reveal, .reveal-scale');
+const revealObserver = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('in-view');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold:0.15, rootMargin:'0px 0px -60px 0px' });
+revealEls.forEach(el=> revealObserver.observe(el));
+
+/* ===================== subtle parallax on hero windows ===================== */
+const parallaxWins = [
+  { el: document.querySelector('.fw-mind'),    speed:.06 },
+  { el: document.querySelector('.fw-canvas'),  speed:.10 },
+  { el: document.querySelector('.fw-copilot'), speed:.14 },
+  { el: document.querySelector('.fw-gen'),     speed:.12 }
+];
+const flowerClusters = document.querySelectorAll('.hero-flowers .cluster');
+
+let ticking = false;
+function updateParallax(){
+  const y = window.scrollY;
+  parallaxWins.forEach(w=>{
+    if(w.el) w.el.style.transform = `translateY(${Math.min(y * w.speed, 90)}px)`;
+  });
+  flowerClusters.forEach((c,i)=>{
+    c.style.transform = `translateY(${Math.min(y * .05 * (i+1), 40)}px)`;
+  });
+  ticking = false;
+}
+window.addEventListener('scroll', ()=>{
+  if(!ticking){
+    requestAnimationFrame(updateParallax);
+    ticking = true;
+  }
+}, { passive:true });
+
+/* ===================== PIXEL MATRIX LED DISPLAY ===================== */
+(function(){
+  const canvas = document.getElementById('matrixCanvas');
+  const panel = canvas.closest('.matrix-panel');
+  const cursorEl = document.getElementById('matrixCursor');
+  const ctx = canvas.getContext('2d');
+
+  const CELL = 19;          // spacing between pixel centers
+  const DOT = 6.5;          // dot radius footprint
+  const MOUSE_RADIUS = 95;
+  const MOUSE_PUSH = 5;
+  const FLICKER_MS = 650;   // chaotic strobing before the word snaps in
+  const SNAP_MS = 300;      // tight window where the word locks on
+  const FORM_MS = FLICKER_MS + SNAP_MS;
+  const DISSOLVE_MS = 550;
+  const IDLE_MS = 5000;      // reform the word every 5 seconds
+  const PANEL_BG = '#20201f';
+
+  let W=0, H=0, DPR=1, cols=0, rows=0;
+  let pixels = [];
+  let mouse = { x:-9999, y:-9999, active:false };
+  let pulses = [];
+  let state = 'forming';       // forming | idle | dissolving
+  let stateStart = performance.now();
+  let idleFor = IDLE_MS;
+  let visible = false;
+
+  function buildLetterMask(){
+    const off = document.createElement('canvas');
+    off.width = Math.round(W); off.height = Math.round(H);
+    const octx = off.getContext('2d');
+    octx.fillStyle = '#000'; octx.fillRect(0,0,off.width,off.height);
+    octx.fillStyle = '#fff';
+    octx.textAlign = 'center'; octx.textBaseline = 'middle';
+    const fontSize = Math.min(H*0.62, W/6.4);
+    octx.font = `900 ${fontSize}px 'Arial Black', Arial, sans-serif`;
+    octx.fillText('FABION', off.width/2, off.height/2 + fontSize*0.03);
+    const data = octx.getImageData(0,0,off.width,off.height).data;
+
+    const fill = new Array(cols);
+    for(let c=0;c<cols;c++){
+      fill[c] = new Array(rows);
+      for(let r=0;r<rows;r++){
+        const px = Math.min(off.width-1, Math.round(c*CELL + CELL/2));
+        const py = Math.min(off.height-1, Math.round(r*CELL + CELL/2));
+        const idx = (py*off.width+px)*4+3;
+        fill[c][r] = data[idx] > 120;
+      }
+    }
+    // outline extraction: fill pixel bordering an empty neighbor
+    const onMask = [];
+    for(let c=0;c<cols;c++){
+      for(let r=0;r<rows;r++){
+        if(!fill[c][r]) continue;
+        const l = c>0 ? fill[c-1][r] : false;
+        const rr = c<cols-1 ? fill[c+1][r] : false;
+        const u = r>0 ? fill[c][r-1] : false;
+        const d = r<rows-1 ? fill[c][r+1] : false;
+        if(!l || !rr || !u || !d) onMask.push([c,r]);
+      }
+    }
+    return onMask;
+  }
+
+  function buildGrid(){
+    const rect = panel.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(W*DPR);
+    canvas.height = Math.round(H*DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+
+    cols = Math.floor(W/CELL);
+    rows = Math.floor(H/CELL);
+    const offX = (W - cols*CELL)/2 + CELL/2;
+    const offY = (H - rows*CELL)/2 + CELL/2;
+
+    const letterCells = new Set(buildLetterMask().map(([c,r])=> c+','+r));
+
+    pixels = [];
+    for(let c=0;c<cols;c++){
+      for(let r=0;r<rows;r++){
+        const isLetter = letterCells.has(c+','+r);
+        pixels.push({
+          gx:c, gy:r,
+          x: offX + c*CELL,
+          y: offY + r*CELL,
+          isLetter,
+          on: 0,                         // current display brightness 0..1
+          formDelay: Math.random(),
+          phase: Math.random()*Math.PI*2,
+          flashUntil: 0,
+          offX:0, offY:0
+        });
+      }
+    }
+    assignFormationDelays('center');
+  }
+
+  function assignFormationDelays(mode){
+    const cx = cols/2, cy = rows/2;
+    let maxD = 1;
+    const withDist = pixels.filter(p=>p.isLetter).map(p=>{
+      let d;
+      if(mode==='sweep-x') d = p.gx;
+      else if(mode==='sweep-y') d = p.gy;
+      else if(mode==='center') d = Math.hypot(p.gx-cx, p.gy-cy);
+      else d = Math.random()*Math.max(cols,rows);
+      return {p,d};
+    });
+    withDist.forEach(o=> maxD = Math.max(maxD, o.d));
+    withDist.forEach(o=>{
+      o.p.formDelay = (o.d/maxD) * 0.75 + Math.random()*0.18;
+    });
+  }
+
+  function startCycle(mode){
+    assignFormationDelays(mode);
+    state = 'forming';
+    stateStart = performance.now();
+  }
+
+  function ambientBrightness(p, now){
+    let b = 0.045 + 0.03*Math.sin(now*0.0016 + p.phase);
+    if(now < p.flashUntil){
+      const t = (p.flashUntil-now)/260;
+      b += 0.55*Math.max(0,t);
+    } else if(Math.random() < 0.0015){
+      p.flashUntil = now + 260;
+    }
+    return b;
+  }
+
+  function step(now){
+    if(!visible){ requestAnimationFrame(step); return; }
+    const elapsed = now - stateStart;
+
+    if(state==='forming' && elapsed > FORM_MS + 250){
+      state = 'idle';
+      stateStart = now;
+      idleFor = IDLE_MS;
+    } else if(state==='idle' && elapsed > idleFor){
+      state = 'dissolving';
+      stateStart = now;
+      pixels.filter(p=>p.isLetter).forEach(p=> p.formDelay = Math.random());
+    } else if(state==='dissolving' && elapsed > DISSOLVE_MS + 150){
+      startCycle('center');
+    }
+
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = PANEL_BG;
+    ctx.fillRect(0,0,W,H);
+
+    pulses = pulses.filter(p => now - p.start < 950);
+
+    for(let i=0;i<pixels.length;i++){
+      const p = pixels[i];
+      let target;
+
+      if(p.isLetter){
+        if(state==='forming'){
+          if(elapsed < FLICKER_MS){
+            if(now > (p.nextFlicker||0)){
+              p.flickerVal = Math.random() > 0.5 ? (0.55+Math.random()*0.55) : 0.04;
+              p.nextFlicker = now + 35 + Math.random()*85;
+            }
+            target = p.flickerVal;
+          } else {
+            const snapProg = Math.max(0, Math.min(1, ((elapsed-FLICKER_MS)/SNAP_MS - p.formDelay*0.5) / 0.6));
+            target = 0.06 + snapProg*0.86;
+          }
+        } else if(state==='dissolving'){
+          const prog = Math.max(0, Math.min(1, (elapsed/DISSOLVE_MS - p.formDelay*0.6) / 0.35));
+          target = 0.92 - prog*0.86;
+        } else {
+          target = 0.82 + 0.14*Math.sin(now*0.003 + p.phase);
+          if(Math.random() < 0.0022) p.flashUntil = now + 220;
+          if(now < p.flashUntil) target = Math.min(1.25, target + 0.35);
+        }
+      } else {
+        target = ambientBrightness(p, now);
+      }
+
+      // mouse proximity glow + repel
+      let pushX = 0, pushY = 0;
+      if(mouse.active){
+        const dx = p.x - mouse.x, dy = p.y - mouse.y;
+        const dist = Math.hypot(dx,dy);
+        if(dist < MOUSE_RADIUS){
+          const influence = 1 - dist/MOUSE_RADIUS;
+          target += influence * 0.55;
+          const push = influence * MOUSE_PUSH;
+          if(dist > 0.01){ pushX = (dx/dist)*push; pushY = (dy/dist)*push; }
+        }
+      }
+      p.offX += (pushX - p.offX) * 0.18;
+      p.offY += (pushY - p.offY) * 0.18;
+
+      // click pulses
+      for(let k=0;k<pulses.length;k++){
+        const pl = pulses[k];
+        const age = now - pl.start;
+        const radius = (age/950) * Math.max(W,H)*0.55;
+        const dist = Math.hypot(p.x-pl.x, p.y-pl.y);
+        const band = 38;
+        if(Math.abs(dist-radius) < band){
+          const inten = (1 - Math.abs(dist-radius)/band) * (1 - age/950);
+          target += inten * 0.9;
+        }
+      }
+
+      p.on += (target - p.on) * (state==='forming' && p.isLetter ? 0.45 : 0.22);
+      const b = Math.max(0, Math.min(1.3, p.on));
+
+      const drawX = p.x + p.offX, drawY = p.y + p.offY;
+      const alpha = Math.min(1, b);
+      if(b > 0.35){
+        ctx.shadowBlur = 5.5*b;
+        ctx.shadowColor = `rgba(255,255,255,${Math.min(1,b*0.8)})`;
+      } else {
+        ctx.shadowBlur = 0;
+      }
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      const r = DOT*0.5*(0.7+0.3*Math.min(1,b));
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(drawX-r, drawY-r, r*2, r*2, 1) : ctx.rect(drawX-r, drawY-r, r*2, r*2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+
+    requestAnimationFrame(step);
+  }
+
+  panel.addEventListener('mousemove', (e)=>{
+    const rect = panel.getBoundingClientRect();
+    mouse.x = e.clientX - rect.left;
+    mouse.y = e.clientY - rect.top;
+    mouse.active = true;
+    cursorEl.style.left = mouse.x+'px';
+    cursorEl.style.top = mouse.y+'px';
+    cursorEl.style.opacity = 1;
+  });
+  panel.addEventListener('mouseleave', ()=>{
+    mouse.active = false;
+    cursorEl.style.opacity = 0;
+  });
+  panel.addEventListener('click', (e)=>{
+    const rect = panel.getBoundingClientRect();
+    pulses.push({ x:e.clientX-rect.left, y:e.clientY-rect.top, start:performance.now() });
+  });
+
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(en=> visible = en.isIntersecting);
+  }, { threshold:0.05 });
+  io.observe(panel);
+
+  let resizeTimer;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(buildGrid, 150);
+  });
+
+  buildGrid();
+  requestAnimationFrame(step);
+})();
+</script>
+
+</body>
+</html>
