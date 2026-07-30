@@ -1846,6 +1846,29 @@ window.addEventListener('scroll', ()=>{
   requestAnimationFrame(step);
 })();
 </script>
+<script>
+  (function () {
+    function goToApp() {
+      // /chat already redirects to "/" (the real Fabion login/landing) if the user isn't logged in,
+      // so this single destination correctly handles both logged-in and logged-out visitors.
+      window.top.location.href = "/chat";
+    }
 
+    document.addEventListener("DOMContentLoaded", function () {
+      var buttons = document.querySelectorAll("button");
+      buttons.forEach(function (btn) {
+        var label = btn.textContent.trim().toUpperCase();
+        if (
+          label.indexOf("LAUNCH APP") !== -1 ||
+          label.indexOf("START CREATING") !== -1 ||
+          label.indexOf("EXPLORE MODELS") !== -1
+        ) {
+          btn.style.cursor = "pointer";
+          btn.addEventListener("click", goToApp);
+        }
+      });
+    });
+  })();
+</script>
 </body>
 </html>
