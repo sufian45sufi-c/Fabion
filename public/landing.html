@@ -681,13 +681,16 @@
       <div class="eyebrow reveal" id="flower-eyebrow-slot" style="transition-delay:.05s">
         <span>WELCOME TO FABION</span>
       </div>
-      <h1 class="hero-title pixel-font reveal" style="transition-delay:.15s">FABION</h1>
+      <div class="title-wrap">
+        <h1 class="hero-title pixel-font reveal" style="transition-delay:.15s">FABION</h1>
+        <div class="title-flower" id="title-flower-slot"></div>
+      </div>
       <p class="hero-sub reveal" style="transition-delay:.25s">
         An AI platform for <span class="accent">creativity</span>.<br>
         Build, imagine, and bring anything to life with your AI co-pilot.
       </p>
       <div class="hero-ctas reveal" style="transition-delay:.35s">
-        <button class="btn">START CREATING FREE &gt;</button>
+        <button class="btn cta-primary">START CREATING FREE &gt;</button>
         <button class="btn outline">EXPLORE MODELS</button>
       </div>
       <div class="hero-proof reveal" style="transition-delay:.45s">
@@ -703,6 +706,23 @@
           <rect x="6" y="2" width="1" height="1"/><rect x="5" y="1" width="1" height="1"/>
         </g></svg>
         <span>Loved by 10,000+ builders, creators, and dreamers.</span>
+      </div>
+
+      <div class="hero-copilot-row reveal" style="transition-delay:.5s">
+        <div class="mini-flowers" id="mini-flowers-slot"></div>
+        <div class="fw-copilot win dark reveal-scale" style="transition-delay:.5s">
+          <div class="win-title">
+            <div class="t"><span class="dot"></span>AI Co-pilot</div>
+            <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
+          </div>
+          <div class="copilot-body">
+            <div class="copilot-q">How can I help you create today?</div>
+            <div class="copilot-input">
+              <input type="text" placeholder="Describe your idea..." disabled>
+              <div class="send-btn"><div class="arrow"></div></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -767,21 +787,6 @@
               <div class="prop-row"><span>Size</span><span class="val">32 x 32</span></div>
               <div class="prop-row"><span>Style</span><span class="val">Pixel Art &#8964;</span></div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- AI Co-pilot window -->
-      <div class="float-win fw-copilot win dark reveal-scale" style="transition-delay:.45s">
-        <div class="win-title">
-          <div class="t"><span class="dot"></span>AI Co-pilot</div>
-          <div class="win-controls"><span>&#8211;</span><span>&#9633;</span><span>&#215;</span></div>
-        </div>
-        <div class="copilot-body">
-          <div class="copilot-q">How can I help you create today?</div>
-          <div class="copilot-input">
-            <input type="text" placeholder="Describe your idea..." disabled>
-            <div class="send-btn"><div class="arrow"></div></div>
           </div>
         </div>
       </div>
@@ -1846,6 +1851,9 @@ window.addEventListener('scroll', ()=>{
   requestAnimationFrame(step);
 })();
 </script>
+
+</body>
+</html>
 <script>
   (function () {
     function goToApp() {
