@@ -164,7 +164,7 @@ export default function Chat() {
 
   const handleLogout = async () => {
     await signOut(auth);
-    router.push("/");
+    window.location.href = "/";
   };
 
   const handleNewChat = () => {
