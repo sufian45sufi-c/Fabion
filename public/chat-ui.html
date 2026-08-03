@@ -316,7 +316,7 @@
   </div>
 
 </div>
-<script>
+  <script>
 /* ===================== pixel icon generators (shared brand style) ===================== */
 function pixelSVG(matrix, colors, w, h, size){
   size = size || 24;
@@ -343,9 +343,111 @@ function boltSVG(size){ return pixelSVG(BOLT_MATRIX, {B:'#e2823d'}, 8, 8, size);
 const AVATAR_MATRIX = ["..HHHHH..",".HHHHHHH.",".HFFFFFH.","HFFFFFFFH","HFFEFFEFH",".FFFFFFF.","..FFFFF..",".CCCCCCC.","CCCCCCCCC"];
 function avatarSVG(hair, skin, shirt, size){ return pixelSVG(AVATAR_MATRIX, {H:hair, F:skin, E:'#3a2c22', C:shirt}, 9, 9, size); }
 
-/* Pixel Art Mascot Data URIs for Animations */
-const MASCOT_THINKING_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="3" y="2" width="6" height="6" fill="#3d5cf0"/><rect x="4" y="4" width="2" height="1" fill="#fff"/><rect x="7" y="4" width="2" height="1" fill="#fff"/><rect x="5" y="8" width="2" height="2" fill="#e2823d"/></svg>');
-const MASCOT_IDLE_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" shape-rendering="crispEdges"><rect x="3" y="2" width="6" height="6" fill="#3d5cf0"/><rect x="4" y="4" width="1" height="1" fill="#fff"/><rect x="7" y="4" width="1" height="1" fill="#fff"/><rect x="5" y="8" width="2" height="2" fill="#e2823d"/></svg>');
+/* ===================== EXACT MASCOT REFERENCE SVGs ===================== */
+// 1. Idle: Closed eyes, headphones, sprout flower, little feet
+const MASCOT_IDLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- Sprout Stem & Flower -->
+  <rect x="15" y="6" width="2" height="6" fill="#2d4a22"/>
+  <rect x="11" y="3" width="2" height="2" fill="#3d7ad6"/>
+  <rect x="17" y="3" width="2" height="2" fill="#3d7ad6"/>
+  <rect x="13" y="1" width="2" height="2" fill="#3d7ad6"/>
+  <rect x="13" y="5" width="2" height="2" fill="#3d7ad6"/>
+  <rect x="13" y="3" width="2" height="2" fill="#ffffff"/>
+  <rect x="11" y="6" width="2" height="1" fill="#7fa8ef"/>
+  
+  <!-- Headphones Band & Earcups -->
+  <path d="M8 12 h16 v2 h-16 z" fill="#1b365d"/>
+  <rect x="6" y="13" width="3" height="7" rx="1" fill="#204375"/>
+  <rect x="23" y="13" width="3" height="7" rx="1" fill="#204375"/>
+
+  <!-- Body (Blue Blob) -->
+  <rect x="7" y="12" width="18" height="14" rx="2" fill="#3d6be8"/>
+  <rect x="5" y="15" width="3" height="9" fill="#3d6be8"/>
+  <rect x="24" y="15" width="3" height="9" fill="#3d6be8"/>
+
+  <!-- Closed Eyes (Sleeping/Chill lines) -->
+  <rect x="11" y="17" width="3" height="1" fill="#1b2c50"/>
+  <rect x="18" y="17" width="3" height="1" fill="#1b2c50"/>
+
+  <!-- Feet -->
+  <rect x="9" y="26" width="3" height="3" fill="#254391"/>
+  <rect x="14" y="26" width="3" height="3" fill="#254391"/>
+  <rect x="20" y="26" width="3" height="3" fill="#254391"/>
+</svg>`;
+
+// 2. Excited / Hover: Open smiling mouth, open eyes, headphones
+const MASCOT_EXCITED_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- Sprout Stem & Flower with Leaf -->
+  <rect x="15" y="6" width="2" height="6" fill="#2d4a22"/>
+  <rect x="11" y="3" width="2" height="2" fill="#528ffc"/>
+  <rect x="17" y="3" width="2" height="2" fill="#528ffc"/>
+  <rect x="13" y="1" width="2" height="2" fill="#528ffc"/>
+  <rect x="13" y="5" width="2" height="2" fill="#528ffc"/>
+  <rect x="13" y="3" width="2" height="2" fill="#ffffff"/>
+  <rect x="11" y="6" width="2" height="1" fill="#4a8a3a"/>
+  <rect x="17" y="5" width="2" height="1" fill="#4a8a3a"/>
+
+  <!-- Headphones -->
+  <path d="M8 12 h16 v2 h-16 z" fill="#1b365d"/>
+  <rect x="6" y="13" width="3" height="7" rx="1" fill="#204375"/>
+  <rect x="23" y="13" width="3" height="7" rx="1" fill="#204375"/>
+
+  <!-- Body -->
+  <rect x="7" y="12" width="18" height="14" rx="2" fill="#4a76f2"/>
+  <rect x="5" y="14" width="3" height="9" fill="#4a76f2"/>
+  <rect x="24" y="14" width="3" height="9" fill="#4a76f2"/>
+
+  <!-- Open Eyes -->
+  <rect x="11" y="16" width="2" height="2" fill="#1b2c50"/>
+  <rect x="19" y="16" width="2" height="2" fill="#1b2c50"/>
+
+  <!-- Happy Smiling Mouth -->
+  <rect x="13" y="20" width="6" height="3" fill="#1b2c50"/>
+  <rect x="14" y="21" width="4" height="2" fill="#ff7043"/>
+
+  <!-- Feet -->
+  <rect x="9" y="26" width="3" height="3" fill="#254391"/>
+  <rect x="14" y="26" width="3" height="3" fill="#254391"/>
+  <rect x="20" y="26" width="3" height="3" fill="#254391"/>
+</svg>`;
+
+// 3. Thinking: Hands on mouth posture
+const MASCOT_THINKING_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
+  <!-- Sprout Stem & Flower -->
+  <rect x="15" y="6" width="2" height="6" fill="#2d4a22"/>
+  <rect x="11" y="3" width="2" height="2" fill="#3d7ad6"/>
+  <rect x="17" y="3" width="2" height="2" fill="#3d7ad6"/>
+  <rect x="13" y="1" width="2" height="2" fill="#3d7ad6"/>
+  <rect x="13" y="5" width="2" height="2" fill="#3d7ad6"/>
+  <rect x="13" y="3" width="2" height="2" fill="#ffffff"/>
+  
+  <!-- Headphones -->
+  <path d="M8 12 h16 v2 h-16 z" fill="#1b365d"/>
+  <rect x="6" y="13" width="3" height="7" rx="1" fill="#204375"/>
+  <rect x="23" y="13" width="3" height="7" rx="1" fill="#204375"/>
+
+  <!-- Body -->
+  <rect x="7" y="12" width="18" height="14" rx="2" fill="#3d6be8"/>
+  <rect x="5" y="15" width="3" height="9" fill="#3d6be8"/>
+  <rect x="24" y="15" width="3" height="9" fill="#3d6be8"/>
+
+  <!-- Focused Eyes -->
+  <rect x="11" y="17" width="2" height="2" fill="#1b2c50"/>
+  <rect x="19" y="17" width="2" height="2" fill="#1b2c50"/>
+
+  <!-- Hands on Mouth Paws -->
+  <rect x="12" y="20" width="8" height="4" rx="1" fill="#4a76f2"/>
+  <rect x="14" y="21" width="4" height="2" fill="#254391"/>
+
+  <!-- Feet -->
+  <rect x="9" y="26" width="3" height="3" fill="#254391"/>
+  <rect x="14" y="26" width="3" height="3" fill="#254391"/>
+  <rect x="20" y="26" width="3" height="3" fill="#254391"/>
+</svg>`;
+
+const MASCOT_IDLE_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(MASCOT_IDLE_SVG);
+const MASCOT_EXCITED_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(MASCOT_EXCITED_SVG);
+const MASCOT_THINKING_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(MASCOT_THINKING_SVG);
 
 document.getElementById('side-cube').innerHTML = cubeSVG(24);
 document.getElementById('side-bolt').innerHTML = boltSVG(24);
@@ -363,11 +465,28 @@ document.getElementById('emptyFlowers').innerHTML =
 
 document.getElementById('titleFlowerLeft').innerHTML = flowerSVG('#3d5cf0', 26);
 document.getElementById('titleFlowerRight').innerHTML = flowerSVG('#e2823d', 26);
-document.getElementById('chatFlyerImg').src = MASCOT_IDLE_URI;
+
+// Setup Flying Mascot with Hover Reaction & Floating Motion
+const flyerImg = document.getElementById('chatFlyerImg');
+if(flyerImg){
+  flyerImg.src = MASCOT_IDLE_URI;
+  flyerImg.style.transition = "transform 0.3s ease";
+  
+  // Hover interaction: switch to excited mascot and bounce
+  flyerImg.addEventListener('mouseenter', () => {
+    flyerImg.src = MASCOT_EXCITED_URI;
+    flyerImg.style.transform = "scale(1.15) rotate(-5deg)";
+  });
+  flyerImg.addEventListener('mouseleave', () => {
+    flyerImg.src = MASCOT_IDLE_URI;
+    flyerImg.style.transform = "scale(1) rotate(0deg)";
+  });
+}
 
 /* fill the empty chat space with subtle scattered pixel crosses */
 (function(){
   const el = document.getElementById('chatScatter');
+  if(!el) return;
   const colors = ['blue','orange','white'];
   for(let i=0;i<16;i++){
     const s = document.createElement('span');
@@ -383,9 +502,8 @@ document.getElementById('chatFlyerImg').src = MASCOT_IDLE_URI;
 /* ===================== REAL model state & persona mapping ===================== */
 const PERSONA_MAP = { Pixel: "pixel", Thread: "thread", Cell: "cell" };
 let currentPersona = "pixel";
-let conversationHistory = []; // { role: "user"|"assistant", content }
+let conversationHistory = [];
 
-/* Get the real logged-in Firebase user id from the parent window (set by pages/chat.js) */
 function getUserId(){
   try {
     return window.top.__FABION_USER_ID__ || null;
@@ -443,6 +561,7 @@ function appendThinking(){
   const avatarWrap = document.createElement('div');
   avatarWrap.className = 'msg-avatar ai';
   avatarWrap.id = 'thinkingAvatar';
+  // Uses the exact thinking posture SVG with hands on mouth
   avatarWrap.innerHTML = `<img src="${MASCOT_THINKING_URI}" class="avatar-mascot-img thinking-img" alt="Mascot thinking">`;
   const col = document.createElement('div');
   col.className = 'msg-col';
@@ -469,7 +588,7 @@ function resolveThinking(refs, replyText){
   bubble.textContent = replyText;
   col.appendChild(bubble);
   
-  // Switch mascot state to success/idle pop
+  // Revert avatar back to normal idle face post-response
   avatarWrap.innerHTML = `<img src="${MASCOT_IDLE_URI}" class="avatar-mascot-img success-img" alt="Mascot ready">`;
   
   avatarWrap.removeAttribute('id');
@@ -478,7 +597,6 @@ function resolveThinking(refs, replyText){
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
-/* Strip control-character signals */
 function cleanReply(raw){
   return raw.replace(/[\u0002-\u0008][\s\S]*?[\u0003\u0005\u0007]?/g, "").trim() || raw.trim();
 }
@@ -562,6 +680,5 @@ document.getElementById('newChatBtn').addEventListener('click', ()=>{
 
 chatInput.focus();
 </script>
-
 </body>
 </html>
