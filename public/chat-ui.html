@@ -316,8 +316,8 @@
   </div>
 
 </div>
-  <script>
-/* ===================== pixel icon generators (shared brand style) ===================== */
+<script>
+/* ===================== pixel icon generators (unchanged) ===================== */
 function pixelSVG(matrix, colors, w, h, size){
   size = size || 24;
   let rects = '';
@@ -343,112 +343,6 @@ function boltSVG(size){ return pixelSVG(BOLT_MATRIX, {B:'#e2823d'}, 8, 8, size);
 const AVATAR_MATRIX = ["..HHHHH..",".HHHHHHH.",".HFFFFFH.","HFFFFFFFH","HFFEFFEFH",".FFFFFFF.","..FFFFF..",".CCCCCCC.","CCCCCCCCC"];
 function avatarSVG(hair, skin, shirt, size){ return pixelSVG(AVATAR_MATRIX, {H:hair, F:skin, E:'#3a2c22', C:shirt}, 9, 9, size); }
 
-/* ===================== EXACT MASCOT REFERENCE SVGs ===================== */
-// 1. Idle: Closed eyes, headphones, sprout flower, little feet
-const MASCOT_IDLE_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <!-- Sprout Stem & Flower -->
-  <rect x="15" y="6" width="2" height="6" fill="#2d4a22"/>
-  <rect x="11" y="3" width="2" height="2" fill="#3d7ad6"/>
-  <rect x="17" y="3" width="2" height="2" fill="#3d7ad6"/>
-  <rect x="13" y="1" width="2" height="2" fill="#3d7ad6"/>
-  <rect x="13" y="5" width="2" height="2" fill="#3d7ad6"/>
-  <rect x="13" y="3" width="2" height="2" fill="#ffffff"/>
-  <rect x="11" y="6" width="2" height="1" fill="#7fa8ef"/>
-  
-  <!-- Headphones Band & Earcups -->
-  <path d="M8 12 h16 v2 h-16 z" fill="#1b365d"/>
-  <rect x="6" y="13" width="3" height="7" rx="1" fill="#204375"/>
-  <rect x="23" y="13" width="3" height="7" rx="1" fill="#204375"/>
-
-  <!-- Body (Blue Blob) -->
-  <rect x="7" y="12" width="18" height="14" rx="2" fill="#3d6be8"/>
-  <rect x="5" y="15" width="3" height="9" fill="#3d6be8"/>
-  <rect x="24" y="15" width="3" height="9" fill="#3d6be8"/>
-
-  <!-- Closed Eyes (Sleeping/Chill lines) -->
-  <rect x="11" y="17" width="3" height="1" fill="#1b2c50"/>
-  <rect x="18" y="17" width="3" height="1" fill="#1b2c50"/>
-
-  <!-- Feet -->
-  <rect x="9" y="26" width="3" height="3" fill="#254391"/>
-  <rect x="14" y="26" width="3" height="3" fill="#254391"/>
-  <rect x="20" y="26" width="3" height="3" fill="#254391"/>
-</svg>`;
-
-// 2. Excited / Hover: Open smiling mouth, open eyes, headphones
-const MASCOT_EXCITED_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <!-- Sprout Stem & Flower with Leaf -->
-  <rect x="15" y="6" width="2" height="6" fill="#2d4a22"/>
-  <rect x="11" y="3" width="2" height="2" fill="#528ffc"/>
-  <rect x="17" y="3" width="2" height="2" fill="#528ffc"/>
-  <rect x="13" y="1" width="2" height="2" fill="#528ffc"/>
-  <rect x="13" y="5" width="2" height="2" fill="#528ffc"/>
-  <rect x="13" y="3" width="2" height="2" fill="#ffffff"/>
-  <rect x="11" y="6" width="2" height="1" fill="#4a8a3a"/>
-  <rect x="17" y="5" width="2" height="1" fill="#4a8a3a"/>
-
-  <!-- Headphones -->
-  <path d="M8 12 h16 v2 h-16 z" fill="#1b365d"/>
-  <rect x="6" y="13" width="3" height="7" rx="1" fill="#204375"/>
-  <rect x="23" y="13" width="3" height="7" rx="1" fill="#204375"/>
-
-  <!-- Body -->
-  <rect x="7" y="12" width="18" height="14" rx="2" fill="#4a76f2"/>
-  <rect x="5" y="14" width="3" height="9" fill="#4a76f2"/>
-  <rect x="24" y="14" width="3" height="9" fill="#4a76f2"/>
-
-  <!-- Open Eyes -->
-  <rect x="11" y="16" width="2" height="2" fill="#1b2c50"/>
-  <rect x="19" y="16" width="2" height="2" fill="#1b2c50"/>
-
-  <!-- Happy Smiling Mouth -->
-  <rect x="13" y="20" width="6" height="3" fill="#1b2c50"/>
-  <rect x="14" y="21" width="4" height="2" fill="#ff7043"/>
-
-  <!-- Feet -->
-  <rect x="9" y="26" width="3" height="3" fill="#254391"/>
-  <rect x="14" y="26" width="3" height="3" fill="#254391"/>
-  <rect x="20" y="26" width="3" height="3" fill="#254391"/>
-</svg>`;
-
-// 3. Thinking: Hands on mouth posture
-const MASCOT_THINKING_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges">
-  <!-- Sprout Stem & Flower -->
-  <rect x="15" y="6" width="2" height="6" fill="#2d4a22"/>
-  <rect x="11" y="3" width="2" height="2" fill="#3d7ad6"/>
-  <rect x="17" y="3" width="2" height="2" fill="#3d7ad6"/>
-  <rect x="13" y="1" width="2" height="2" fill="#3d7ad6"/>
-  <rect x="13" y="5" width="2" height="2" fill="#3d7ad6"/>
-  <rect x="13" y="3" width="2" height="2" fill="#ffffff"/>
-  
-  <!-- Headphones -->
-  <path d="M8 12 h16 v2 h-16 z" fill="#1b365d"/>
-  <rect x="6" y="13" width="3" height="7" rx="1" fill="#204375"/>
-  <rect x="23" y="13" width="3" height="7" rx="1" fill="#204375"/>
-
-  <!-- Body -->
-  <rect x="7" y="12" width="18" height="14" rx="2" fill="#3d6be8"/>
-  <rect x="5" y="15" width="3" height="9" fill="#3d6be8"/>
-  <rect x="24" y="15" width="3" height="9" fill="#3d6be8"/>
-
-  <!-- Focused Eyes -->
-  <rect x="11" y="17" width="2" height="2" fill="#1b2c50"/>
-  <rect x="19" y="17" width="2" height="2" fill="#1b2c50"/>
-
-  <!-- Hands on Mouth Paws -->
-  <rect x="12" y="20" width="8" height="4" rx="1" fill="#4a76f2"/>
-  <rect x="14" y="21" width="4" height="2" fill="#254391"/>
-
-  <!-- Feet -->
-  <rect x="9" y="26" width="3" height="3" fill="#254391"/>
-  <rect x="14" y="26" width="3" height="3" fill="#254391"/>
-  <rect x="20" y="26" width="3" height="3" fill="#254391"/>
-</svg>`;
-
-const MASCOT_IDLE_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(MASCOT_IDLE_SVG);
-const MASCOT_EXCITED_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(MASCOT_EXCITED_SVG);
-const MASCOT_THINKING_URI = 'data:image/svg+xml;utf8,' + encodeURIComponent(MASCOT_THINKING_SVG);
-
 document.getElementById('side-cube').innerHTML = cubeSVG(24);
 document.getElementById('side-bolt').innerHTML = boltSVG(24);
 document.getElementById('side-flower').innerHTML = flowerSVG('#d64bb0', 24);
@@ -462,31 +356,11 @@ document.getElementById('gearIcon').innerHTML = `<svg class="pixel" viewBox="0 0
 document.getElementById('emptyFlowers').innerHTML =
   flowerSVG('#e2823d', 26) + flowerSVG('#3d5cf0', 42) + flowerSVG('#f3ebda', 30) +
   flowerSVG('#d64bb0', 24) + flowerSVG('#3d5cf0', 34) + flowerSVG('#f3ebda', 22);
-
 document.getElementById('titleFlowerLeft').innerHTML = flowerSVG('#3d5cf0', 26);
 document.getElementById('titleFlowerRight').innerHTML = flowerSVG('#e2823d', 26);
 
-// Setup Flying Mascot with Hover Reaction & Floating Motion
-const flyerImg = document.getElementById('chatFlyerImg');
-if(flyerImg){
-  flyerImg.src = MASCOT_IDLE_URI;
-  flyerImg.style.transition = "transform 0.3s ease";
-  
-  // Hover interaction: switch to excited mascot and bounce
-  flyerImg.addEventListener('mouseenter', () => {
-    flyerImg.src = MASCOT_EXCITED_URI;
-    flyerImg.style.transform = "scale(1.15) rotate(-5deg)";
-  });
-  flyerImg.addEventListener('mouseleave', () => {
-    flyerImg.src = MASCOT_IDLE_URI;
-    flyerImg.style.transform = "scale(1) rotate(0deg)";
-  });
-}
-
-/* fill the empty chat space with subtle scattered pixel crosses */
 (function(){
   const el = document.getElementById('chatScatter');
-  if(!el) return;
   const colors = ['blue','orange','white'];
   for(let i=0;i<16;i++){
     const s = document.createElement('span');
@@ -499,17 +373,23 @@ if(flyerImg){
   }
 })();
 
-/* ===================== REAL model state & persona mapping ===================== */
+/* ===================== REAL state ===================== */
 const PERSONA_MAP = { Pixel: "pixel", Thread: "thread", Cell: "cell" };
 let currentPersona = "pixel";
 let conversationHistory = [];
+let currentChatId = null;
+let allChats = {};
 
 function getUserId(){
+  try { return window.top.__FABION_USER_ID__ || null; } catch(e) { return null; }
+}
+function callParent(fnName, ...args){
   try {
-    return window.top.__FABION_USER_ID__ || null;
-  } catch(e) {
-    return null;
-  }
+    if (window.top && typeof window.top[fnName] === 'function') {
+      return window.top[fnName](...args);
+    }
+  } catch(e) {}
+  return null;
 }
 
 document.querySelectorAll('.app-model-row').forEach(row=>{
@@ -521,7 +401,82 @@ document.querySelectorAll('.app-model-row').forEach(row=>{
   });
 });
 
-/* ===================== chat logic (REAL + Mascot Animations) ===================== */
+/* ===================== sidebar navigation buttons ===================== */
+document.querySelectorAll('.app-side-link').forEach((link) => {
+  const label = link.textContent.trim();
+  link.style.cursor = 'pointer';
+  link.addEventListener('click', () => {
+    if (label.indexOf('Fabion Mind') !== -1) {
+      window.top.location.href = '/mind';
+    } else if (label.indexOf('Settings') !== -1) {
+      window.top.location.href = '/settings';
+    }
+  });
+});
+
+/* ===================== chat sidebar list (real, Firebase-backed via parent) ===================== */
+function renderChatList(){
+  let listEl = document.getElementById('chatHistoryList');
+  if(!listEl){
+    listEl = document.createElement('div');
+    listEl.id = 'chatHistoryList';
+    listEl.style.cssText = 'display:flex;flex-direction:column;gap:4px;overflow-y:auto;flex:1;margin-top:8px;';
+    const divider = document.querySelector('.app-side-divider');
+    divider.parentNode.insertBefore(listEl, divider);
+    const label = document.createElement('div');
+    label.className = 'app-label';
+    label.textContent = 'RECENT CHATS';
+    label.id = 'chatHistoryLabel';
+    listEl.parentNode.insertBefore(label, listEl);
+  }
+  listEl.innerHTML = '';
+  const ids = Object.keys(allChats).sort((a,b)=> (allChats[b].updatedAt||0) - (allChats[a].updatedAt||0));
+  ids.forEach((id) => {
+    const chat = allChats[id];
+    const item = document.createElement('div');
+    item.textContent = chat.title || 'New chat';
+    item.style.cssText = `padding:8px 10px;font-size:11.5px;color:${id===currentChatId ? '#fff' : '#9c9890'};cursor:pointer;border:1px solid ${id===currentChatId ? 'var(--blue)' : 'transparent'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
+    item.addEventListener('click', () => loadChat(id));
+    listEl.appendChild(item);
+  });
+}
+
+async function loadChat(id){
+  const chat = allChats[id];
+  if(!chat) return;
+  currentChatId = id;
+  conversationHistory = (chat.messages || []).map(m => ({
+    role: m.sender === 'user' ? 'user' : 'assistant',
+    content: m.text
+  }));
+
+  const titleBar = document.getElementById('chatTitleBar');
+  messagesEl.innerHTML = '';
+  messagesEl.appendChild(titleBar);
+
+  if((chat.messages || []).length > 0){
+    chatMain.classList.add('active');
+    chat.messages.forEach(m => {
+      if(m.sender === 'user'){
+        appendUserMessage(m.text);
+      } else {
+        const refs = appendThinking();
+        resolveThinking(refs, m.text, m.images || []);
+      }
+    });
+  } else {
+    chatMain.classList.remove('active');
+  }
+  renderChatList();
+}
+
+async function refreshChatsFromParent(){
+  const data = await callParent('__fabionGetChats');
+  allChats = data || {};
+  renderChatList();
+}
+
+/* ===================== chat logic ===================== */
 const chatMain = document.getElementById('chatMain');
 const chatInput = document.getElementById('chatInput');
 const sendBtn = document.getElementById('sendBtn');
@@ -561,8 +516,7 @@ function appendThinking(){
   const avatarWrap = document.createElement('div');
   avatarWrap.className = 'msg-avatar ai';
   avatarWrap.id = 'thinkingAvatar';
-  // Uses the exact thinking posture SVG with hands on mouth
-  avatarWrap.innerHTML = `<img src="${MASCOT_THINKING_URI}" class="avatar-mascot-img thinking-img" alt="Mascot thinking">`;
+  avatarWrap.innerHTML = `<div style="width:100%;height:100%;background:#3d5cf0;"></div>`;
   const col = document.createElement('div');
   col.className = 'msg-col';
   col.id = 'thinkingCol';
@@ -576,29 +530,100 @@ function appendThinking(){
   return { row, avatarWrap, col };
 }
 
-function resolveThinking(refs, replyText){
+/* Renders **bold** as real bold, keeps everything else as plain text */
+function formatInline(text){
+  const span = document.createElement('span');
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  parts.forEach(part => {
+    if(part.startsWith('**') && part.endsWith('**')){
+      const b = document.createElement('strong');
+      b.textContent = part.slice(2, -2);
+      span.appendChild(b);
+    } else if(part) {
+      span.appendChild(document.createTextNode(part));
+    }
+  });
+  return span;
+}
+
+function typewriterInto(bubbleEl, text, onDone){
+  let i = 0;
+  const speed = 12; // ms per character, feels fast but visible
+  function tick(){
+    if(i <= text.length){
+      bubbleEl.innerHTML = '';
+      bubbleEl.appendChild(formatInline(text.slice(0, i)));
+      i += 2;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      setTimeout(tick, speed);
+    } else {
+      bubbleEl.innerHTML = '';
+      bubbleEl.appendChild(formatInline(text));
+      if(onDone) onDone();
+    }
+  }
+  tick();
+}
+
+function resolveThinking(refs, replyText, images){
   const { avatarWrap, col, row } = refs;
   if(!avatarWrap || !col) return;
   const dots = document.getElementById('thinkingDots');
   if(dots) dots.remove();
   const modelName = document.getElementById('activeModelLabel').textContent.replace('\u2014 ','');
   col.querySelector('.msg-head').innerHTML = `<span class="msg-name">Fabion (${modelName})</span><span class="msg-time">${timeNow()}</span>`;
+
+  if(images && images.length > 0){
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px;max-width:400px;';
+    images.slice(0,4).forEach(img => {
+      const src = typeof img === 'string' ? img : (img.url || img.src || '');
+      if(!src) return;
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'border:2px solid #45443f;overflow:hidden;height:110px;';
+      const imgEl = document.createElement('img');
+      imgEl.src = '/api/image-proxy?url=' + encodeURIComponent(src);
+      imgEl.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      imgEl.onerror = () => { wrap.style.display = 'none'; };
+      wrap.appendChild(imgEl);
+      grid.appendChild(wrap);
+    });
+    col.appendChild(grid);
+  }
+
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble';
-  bubble.textContent = replyText;
   col.appendChild(bubble);
-  
-  // Revert avatar back to normal idle face post-response
-  avatarWrap.innerHTML = `<img src="${MASCOT_IDLE_URI}" class="avatar-mascot-img success-img" alt="Mascot ready">`;
-  
+
   avatarWrap.removeAttribute('id');
   col.removeAttribute('id');
   if(row) row.removeAttribute('id');
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+
+  typewriterInto(bubble, replyText);
 }
 
-function cleanReply(raw){
-  return raw.replace(/[\u0002-\u0008][\s\S]*?[\u0003\u0005\u0007]?/g, "").trim() || raw.trim();
+function cleanReplyAndImages(raw){
+  const REASONING_START = "\u0002", REASONING_END = "\u0003";
+  const SEARCH_START = "\u0004", SEARCH_END = "\u0005";
+  const IMAGE_START = "\u0006", IMAGE_END = "\u0007";
+  let output = "";
+  let images = [];
+  let inReasoning = false, inImage = false, imageBuf = "";
+  for(let i=0;i<raw.length;i++){
+    const ch = raw[i];
+    if(ch === REASONING_START){ inReasoning = true; }
+    else if(ch === REASONING_END){ inReasoning = false; }
+    else if(ch === SEARCH_START || ch === SEARCH_END){ /* skip */ }
+    else if(ch === IMAGE_START){ inImage = true; imageBuf = ""; }
+    else if(ch === IMAGE_END){
+      inImage = false;
+      try { images = images.concat(JSON.parse(imageBuf)); } catch(e){}
+    }
+    else if(inImage){ imageBuf += ch; }
+    else if(inReasoning){ /* skip reasoning text */ }
+    else { output += ch; }
+  }
+  return { text: output.trim(), images };
 }
 
 async function sendMessage(){
@@ -611,7 +636,7 @@ async function sendMessage(){
     appendUserMessage(val);
     chatInput.value = '';
     const refs = appendThinking();
-    resolveThinking(refs, "You need to be logged in to chat. Please refresh and log in again.");
+    resolveThinking(refs, "You need to be logged in to chat. Please refresh and log in again.", []);
     return;
   }
 
@@ -621,7 +646,6 @@ async function sendMessage(){
 
   appendUserMessage(val);
   chatInput.value = '';
-
   conversationHistory.push({ role: "user", content: val });
 
   const refs = appendThinking();
@@ -642,7 +666,7 @@ async function sendMessage(){
 
     if(res.status === 429){
       const errData = await res.json();
-      resolveThinking(refs, errData.error || "Too many messages. Please wait a moment.");
+      resolveThinking(refs, errData.error || "Too many messages. Please wait a moment.", []);
       return;
     }
 
@@ -655,11 +679,15 @@ async function sendMessage(){
       raw += decoder.decode(value, { stream: true });
     }
 
-    const finalText = cleanReply(raw) || "Sorry, I didn't get a response. Please try again.";
+    const { text, images } = cleanReplyAndImages(raw);
+    const finalText = text || "Sorry, I didn't get a response. Please try again.";
     conversationHistory.push({ role: "assistant", content: finalText });
-    resolveThinking(refs, finalText);
+    resolveThinking(refs, finalText, images);
+
+    currentChatId = await callParent('__fabionSaveChat', currentChatId, val, finalText, images);
+    await refreshChatsFromParent();
   } catch(err) {
-    resolveThinking(refs, "Error reaching the agent. Please try again.");
+    resolveThinking(refs, "Error reaching the agent. Please try again.", []);
   }
 }
 
@@ -675,10 +703,13 @@ document.getElementById('newChatBtn').addEventListener('click', ()=>{
   chatMain.classList.remove('active');
   chatInput.value = '';
   conversationHistory = [];
+  currentChatId = null;
+  renderChatList();
   chatInput.focus();
 });
 
 chatInput.focus();
+refreshChatsFromParent();
 </script>
 </body>
 </html>
