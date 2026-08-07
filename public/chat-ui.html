@@ -553,7 +553,13 @@ function appendThinking(){
   avatarWrap.className = 'msg-avatar ai';
   avatarWrap.id = 'thinkingAvatar';
   // Fixed thinking animation state for AI avatar
-  avatarWrap.innerHTML = `<img class="avatar-mascot-img thinking-img" src="${MASCOT_DEFAULT_URI}" alt="Thinking AI">`;
+avatarWrap.innerHTML = `
+<img
+    src="${document.getElementById('chatFlyerImg').src}"
+    class="avatar-mascot-img thinking-img"
+    alt="Fabion"
+>
+`;
   
   const col = document.createElement('div');
   col.className = 'msg-col';
@@ -606,8 +612,22 @@ function typewriterInto(bubbleEl, text, onDone){
 function resolveThinking(refs, replyText, images){
   const { avatarWrap, col, row } = refs;
   if(!avatarWrap || !col) return;
-  const dots = document.getElementById('thinkingDots');
-  if(dots) dots.remove();
+ const mascot = avatarWrap.querySelector('.avatar-mascot-img');
+
+if (mascot) {
+    mascot.classList.remove('thinking-img');
+    mascot.classList.add('success-img');
+}
+const mascot = avatarWrap.querySelector('.avatar-mascot-img');
+
+if (mascot) {
+    mascot.classList.remove('thinking-img');
+    mascot.classList.add('success-img');
+}
+
+const dots = document.getElementById('thinkingDots');
+if(dots) dots.remove();
+
   const modelName = document.getElementById('activeModelLabel').textContent.replace('\u2014 ','');
   col.querySelector('.msg-head').innerHTML = `<span class="msg-name">Fabion (${modelName})</span><span class="msg-time">${timeNow()}</span>`;
 
