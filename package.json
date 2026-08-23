@@ -1,0 +1,22 @@
+{
+  "name": "fabion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fabion — AI-native desktop workspace, agentic CLI, and model ecosystem",
+  "type": "module",
+  "scripts": {
+    "dev:desktop": "electron apps/desktop/main.js",
+    "dev:cli":     "node apps/cli/index.js",
+    "setup":       "node scripts/setup.js"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0"
+  }
+}

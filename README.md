@@ -1,360 +1,141 @@
-# 🐾 Fabion
+# Fabion
 
-> **An AI-native desktop workspace, agentic CLI, and open-source AI model built around Fabio.**
+> AI-native desktop workspace · Agentic CLI · Fabion Model
 
-Fabion is an open-source AI environment designed to go beyond the traditional chatbot.
-
-Instead of simply asking an AI questions, Fabion is being built so an AI agent can **work alongside you** — understanding your projects, working with files, using tools, writing code, running commands, and helping you create.
-
-At the center of Fabion is **Fabio**, the mascot and identity of the platform.
+**Fabion** is an AI environment where Fabio can actually work with you and your computer.
+Not a chatbot wrapper. Not a dashboard. A workspace.
 
 ---
 
-## ✦ The Vision
+## What is Fabion?
 
-Fabion is built around one idea:
+| Component | Description |
+|---|---|
+| **Fabion Desktop** | Floating, spatial Electron workspace |
+| **Fabion CLI** | Agentic coding tool — `fabion "build X"` |
+| **Fabion Model** | Our own transformer model research project |
 
-> **AI shouldn't just answer you. It should be able to work with you.**
-
-Fabion combines a desktop environment, an agentic command-line interface, a shared agent runtime, a Skills system, and eventually its own AI model.
-
-```text
-                         FABION
-                            │
-              ┌─────────────┴─────────────┐
-              │                           │
-       FABION DESKTOP                FABION CLI
-              │                           │
-              └─────────────┬─────────────┘
-                            │
-                     FABION CORE
-                            │
-          ┌─────────────────┼─────────────────┐
-          │                 │                 │
-        MODEL             TOOLS             SKILLS
-          │                 │                 │
-          └─────────────────┼─────────────────┘
-                            │
-                        WORKSPACE
-                            │
-                   Files / Code / Git
-                            │
-                          FABIO
-```
+The mascot and identity of the platform is **Fabio** — the visual representation of the agent.
 
 ---
 
-## 🖥️ Fabion Desktop
-
-Fabion Desktop is a native desktop AI workspace built with Electron.
-
-It is intentionally **not designed like a traditional rectangular application**.
-
-The interface is built around a floating, transparent, spatial experience with Fabio at the center.
-
-The desktop environment is intended to provide:
-
-* AI agent interaction
-* Project workspaces
-* File and code awareness
-* Agent activity
-* Terminal access
-* Creative tools
-* Skills
-* Workspace context
-* Fabio
-
----
-
-## ⌘ Fabion CLI
-
-Fabion also provides an agentic command-line interface.
+## Quick start (Codespaces or local)
 
 ```bash
-fabion
+# 1. Clone the repository
+git clone https://github.com/your-org/fabion.git
+cd fabion
+
+# 2. Run setup (installs pnpm and dependencies)
+./scripts/setup.sh
+
+# 3a. Run the CLI
+pnpm dev:cli
+
+# 3b. Run the Desktop (requires a display)
+pnpm dev:desktop
 ```
 
-The CLI is not intended to be just another AI chatbot in a terminal.
+### Environment variables
 
-Fabio will eventually be able to work directly inside a project:
+Copy `.env.example` to `.env` and fill in your values:
 
-```text
-Inspect project
-      ↓
-Understand context
-      ↓
-Plan
-      ↓
-Use tools
-      ↓
-Modify files
-      ↓
-Run commands
-      ↓
-Observe results
-      ↓
-Iterate
-```
-
-The Desktop and CLI are **not separate AI systems**.
-
-They are two interfaces connected to the same Fabion core.
-
----
-
-## 🧠 Fabion Core
-
-Fabion Core is the shared agent runtime behind the Desktop and CLI.
-
-It will be responsible for:
-
-* Agent loops
-* Context management
-* Tool execution
-* Workspace awareness
-* Permissions
-* Skills
-* Model communication
-* Agent state
-* Task execution
-
-The goal is to make the Desktop and CLI feel like two different ways of interacting with the **same Fabio**.
-
----
-
-## 🧩 Skills
-
-Fabion will have a modular Skills system.
-
-Skills allow Fabio to gain specialized knowledge and workflows for different tasks.
-
-Examples:
-
-```text
-coding
-debugging
-frontend
-backend
-git
-architecture
-documentation
-research
-```
-
-Skills will be reusable across both Desktop and CLI.
-
----
-
-## 🤖 Fabion Model
-
-Fabion is also intended to eventually develop its own AI model.
-
-The project will begin with small experimental models rather than attempting to immediately create a massive general-purpose model.
-
-The model research will explore:
-
-* Tokenization
-* Embeddings
-* Transformers
-* Attention
-* Training
-* Dataset processing
-* Evaluation
-* Inference
-* Fine-tuning
-* Agentic capabilities
-
-The long-term goal is to develop a model optimized for **coding, agentic work, and creative tasks**.
-
----
-
-## 🐾 Fabio
-
-Fabio is the main mascot of Fabion.
-
-Fabio represents the agent that works with the user across the entire Fabion ecosystem.
-
-Fabio is intended to have different states depending on what is happening:
-
-```text
-Idle
-Thinking
-Working
-Waiting
-Success
-Error
-```
-
-The visual identity is pixel-inspired, minimal, and recognizable.
-
----
-
-## 🏗️ Architecture
-
-The project is being designed around a shared core rather than separate applications.
-
-```text
-                 ┌─────────────────┐
-                 │      FABIO      │
-                 └────────┬────────┘
-                          │
-                 ┌────────▼────────┐
-                 │   Fabion Core   │
-                 └────────┬────────┘
-                          │
-        ┌─────────────────┼─────────────────┐
-        │                 │                 │
-      Model             Tools             Skills
-        │                 │                 │
-        └─────────────────┼─────────────────┘
-                          │
-                    Workspace
-                          │
-             ┌────────────┴────────────┐
-             │                         │
-          Desktop                     CLI
+```bash
+FABION_API_KEY=your-api-key-here   # Remote model API key
 ```
 
 ---
 
-## 🛠️ Technology
+## Repository structure
 
-Fabion is currently being developed around:
-
-* Electron
-* Node.js
-* JavaScript / TypeScript
-* GitHub
-* GitHub Codespaces
-* Agent runtime architecture
-* Custom AI model research
-
-The technology stack may evolve as the project grows.
-
----
-
-## 📁 Project Structure
-
-The repository is evolving toward a structure similar to:
-
-```text
+```
 fabion/
-│
 ├── apps/
-│   ├── desktop/
-│   └── cli/
+│   ├── desktop/          Electron + Vite desktop application
+│   └── cli/              Fabion CLI binary
 │
 ├── packages/
-│   ├── core/
-│   ├── agents/
-│   ├── tools/
-│   ├── skills/
-│   ├── workspace/
-│   ├── terminal/
-│   └── shared/
+│   ├── shared/           Cross-cutting types, logger, utilities
+│   ├── core/             Tool, Skill, Model, Agent interfaces
+│   ├── model-runtime/    Model adapter implementations
+│   ├── agents/           Agent runtime (Phase 3)
+│   ├── tools/            Built-in tools: read_file, git, etc. (Phase 3)
+│   ├── skills/           Modular skill system (Phase 5)
+│   └── workspace/        Workspace context (Phase 3)
 │
-├── model/
+├── model/                Fabion Model research (Phase 7)
 │   ├── tokenizer/
 │   ├── architecture/
 │   ├── training/
-│   ├── datasets/
-│   ├── evaluation/
-│   └── inference/
+│   └── ...
 │
 ├── assets/
-│   └── fabio/
+│   └── fabio/            Fabio SVG and animation assets
 │
-├── docs/
-│
-├── scripts/
-│
-├── package.json
-└── README.md
+├── docs/                 Architecture decisions and guides
+└── scripts/              Dev and setup scripts
 ```
 
 ---
 
-## 🚧 Status
+## Development phases
 
-**Fabion is currently in early development.**
-
-The project is being built from the ground up.
-
-Current priorities include:
-
-* [ ] Repository foundation
-* [ ] Electron desktop shell
-* [ ] Floating Fabion interface
-* [ ] Fabio integration
-* [ ] Shared agent runtime
-* [ ] Workspace system
-* [ ] Agent tools
-* [ ] Fabion CLI
-* [ ] Skills system
-* [ ] Model abstraction
-* [ ] Fabion Model research
-
-Features and architecture may change significantly during development.
+| Phase | Status | Description |
+|---|---|---|
+| 1 | ✅ **Complete** | Monorepo foundation, CLI stub, Desktop shell |
+| 2 | 🔲 Planned | Desktop visual prototype |
+| 3 | 🔲 Planned | Agent runtime + tools |
+| 4 | 🔲 Planned | CLI agent connection |
+| 5 | 🔲 Planned | Skills system |
+| 6 | 🔲 Planned | Model abstraction |
+| 7 | 🔲 Planned | Fabion Model research |
+| 8 | 🔲 Planned | Full integration |
 
 ---
 
-## 🌎 Open Source
+## Architecture
 
-Fabion is being developed openly on GitHub.
+```
+                    FABION
+                       │
+                ┌──────┴──────┐
+                │             │
+             Desktop         CLI
+                │             │
+                └──────┬──────┘
+                       │
+                 Agent Runtime
+                       │
+          ┌────────────┼────────────┐
+          │            │            │
+        Model        Tools        Skills
+          │            │            │
+          └────────────┼────────────┘
+                       │
+                   Workspace
+                       │
+              Files · Git · Terminal
+```
 
-The long-term goal is to create an ecosystem where developers can:
-
-* Use Fabion
-* Build Skills
-* Create tools
-* Contribute to the agent runtime
-* Experiment with the model
-* Extend the Desktop
-* Extend the CLI
-* Build new capabilities for Fabio
-
----
-
-## 🔒 Security
-
-Fabion is intended to interact with local projects, files, and terminal commands.
-
-Security is therefore a core part of the architecture.
-
-Fabion will use permission boundaries around potentially dangerous operations and will avoid exposing secrets or credentials.
-
-**Never commit API keys, passwords, tokens, or other secrets to the repository.**
-
----
-
-## 📜 License
-
-Fabion is released under the **MIT License**.
-
-See [`LICENSE`](LICENSE) for details.
+The Desktop and CLI **do not** implement separate agent logic.
+All agent behaviour lives in the shared runtime.
 
 ---
 
-## 🐾 The Goal
+## Key design decisions
 
-Fabion isn't meant to be:
+**Model adapter pattern** — The agent runtime never talks directly to a model.
+It talks to a `ModelProvider` interface, which can be swapped between
+local, remote, or the eventual Fabion Model without touching agent code.
 
-> **"ChatGPT inside an Electron window."**
+**Low-powered hardware support** — Fabion does not require a large local GPU.
+The architecture defaults to remote providers and adds local support optionally.
 
-It is meant to become:
+**Fabio is the identity** — Fabio is not an icon. Fabio is the visual
+representation of the agent's current state and the core of Fabion's personality.
 
-> **"An AI environment where Fabio can actually work with me."**
+---
 
-The Desktop is the environment.
+## License
 
-The CLI is the power-user interface.
-
-The Core is the agent runtime.
-
-Skills are capabilities.
-
-The Model provides intelligence.
-
-And Fabio is the identity connecting everything together.
-
-**Fabion is just getting started.** 🐾
+MIT

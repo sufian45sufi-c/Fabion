@@ -1,0 +1,10 @@
+{
+  "name": "@fabion/tools",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "description": "Built-in tools for the Fabion agent",
+  "dependencies": {
+    "@fabion/core": "*"
+  }
+}

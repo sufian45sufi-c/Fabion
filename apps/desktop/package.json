@@ -1,0 +1,10 @@
+{
+  "name": "@fabion/desktop",
+  "version": "0.1.0",
+  "main": "main.js",
+  "description": "The Fabion desktop application",
+  "dependencies": {
+    "@fabion/core":   "*",
+    "@fabion/agents": "*"
+  }
+}

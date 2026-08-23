@@ -1,0 +1,385 @@
+/*
+ * apps/desktop/renderer/styles.css
+ *
+ * All visual styles for the Fabion desktop UI.
+ *
+ * Design language:
+ *   - Dark stone surfaces  (#1e1d1b, #1c1b1a)
+ *   - Warm cream text      (#f3ebda)
+ *   - Blue accent          (#3d5cf0)
+ *   - JetBrains Mono font
+ *   - Rounded, floating surfaces — not a traditional window
+ *   - Minimal — nothing decorative that doesn't serve the UI
+ */
+
+/* ─── Design tokens ───────────────────────────────────────────────────────── */
+
+:root {
+  --blue:        #3d5cf0;
+  --blue-light:  #7f95ff;
+  --blue-dim:    rgba(61, 92, 240, 0.15);
+  --cream:       #f3ebda;
+  --surface-0:   #111110;   /* page background */
+  --surface-1:   #1e1d1b;   /* workspace card, prompt bar */
+  --surface-2:   #1c1b1a;   /* content area inside the card */
+  --surface-3:   #242321;   /* assistant message bubbles */
+  --surface-4:   #292524;   /* hover states */
+  --border:      rgba(120, 113, 108, 0.3);
+  --border-mid:  rgba(68, 64, 60, 1);
+  --text-dim:    #78716c;
+  --text-ghost:  #57534e;
+  --green:       #5cba7d;
+  --yellow:      #d4a64a;
+  --red:         #e05c5c;
+  --font:        'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+
+/* ─── Reset ───────────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;  /* window is frameless — nothing behind the card */
+  font-family: var(--font);
+  font-size: 13px;
+  color: var(--cream);
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+input {
+  font-family: inherit;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #333230; border-radius: 9999px; }
+
+/* ─── Animations ──────────────────────────────────────────────────────────── */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes thinking-pulse {
+  0%, 100% { opacity: 0.35; }
+  50%       { opacity: 1; }
+}
+
+/* ─── Root layout ─────────────────────────────────────────────────────────── */
+
+#app {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  padding: 0 16px;
+}
+
+main {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 740px;
+  max-width: 96vw;
+}
+
+/* ─── Fabio mascot ────────────────────────────────────────────────────────── */
+
+.fabio-wrap {
+  margin-bottom: 16px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fabio-wrap img {
+  height: 80px;
+  width: auto;
+  animation: float 4s ease-in-out infinite;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.8));
+}
+
+/* ─── Workspace card ──────────────────────────────────────────────────────── */
+
+.workspace {
+  width: 100%;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─── Content area ────────────────────────────────────────────────────────── */
+
+.content-area {
+  height: 280px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--surface-2);
+}
+
+/* ─── Initial view (shown before any message is sent) ────────────────────── */
+
+.initial-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.initial-view.hidden {
+  display: none;
+}
+
+.choose-folder-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(41, 37, 36, 0.6);
+  border: 1px solid rgba(87, 83, 78, 0.6);
+  border-radius: 12px;
+  color: var(--blue-light);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.choose-folder-btn:hover {
+  background: var(--surface-4);
+}
+
+/* ─── Chat view ───────────────────────────────────────────────────────────── */
+
+.chat-view {
+  display: none;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chat-view.active {
+  display: flex;
+}
+
+#messages-scroll {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 4px;
+}
+
+/* ─── Message bubbles ─────────────────────────────────────────────────────── */
+
+.msg-user {
+  align-self: flex-end;
+  background: var(--blue);
+  color: #fff;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border-top-right-radius: 4px;
+  max-width: 85%;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.msg-assistant {
+  align-self: flex-start;
+  background: var(--surface-3);
+  color: #e5e2de;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border-top-left-radius: 4px;
+  max-width: 85%;
+  font-size: 12px;
+  border: 1px solid var(--border-mid);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Thinking animation — three dots while Fabio processes */
+
+.thinking-dots {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+  padding: 8px;
+}
+
+.thinking-dots span {
+  animation: thinking-pulse 1.2s ease-in-out infinite;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
+.thinking-dots span:nth-child(3) { animation-delay: 0.30s; }
+
+/* ─── Status bar ──────────────────────────────────────────────────────────── */
+
+.statusbar {
+  padding: 10px 24px;
+  background: #181716;
+  border-top: 1px solid rgba(41, 37, 36, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.statusbar-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: color 0.12s;
+}
+
+.statusbar-item:hover {
+  color: #d6d3d1;
+}
+
+.statusbar-item svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.statusbar-sep {
+  color: #44403c;
+}
+
+/* ─── Prompt row ──────────────────────────────────────────────────────────── */
+
+.prompt-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-top: 16px;
+}
+
+/* Left dock — floating action buttons */
+
+.dock-left {
+  position: absolute;
+  left: -12px;
+  transform: translateX(-100%);
+  display: flex;
+}
+
+.dock-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface-1);
+  border: 1px solid #292524;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  transition: background 0.15s, color 0.15s;
+  margin-left: -10px;  /* overlapping circles */
+}
+
+.dock-btn:first-child  { margin-left: 0; z-index: 30; }
+.dock-btn:nth-child(2) { z-index: 20; }
+.dock-btn:nth-child(3) { z-index: 10; }
+
+.dock-btn:hover {
+  background: var(--surface-4);
+  color: #d6d3d1;
+}
+
+.dock-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+/* Prompt bar */
+
+.prompt-bar {
+  flex: 1;
+  background: var(--surface-1);
+  border: 1px solid #292524;
+  border-radius: 9999px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  gap: 12px;
+}
+
+.prompt-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e5e2de;
+  font-family: var(--font);
+  font-size: 12px;
+  caret-color: var(--blue-light);
+}
+
+.prompt-input::placeholder {
+  color: var(--text-ghost);
+}
+
+.prompt-send {
+  background: transparent;
+  border: none;
+  color: var(--text-ghost);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.prompt-send:hover     { color: var(--blue-light); }
+.prompt-send.has-text  { color: var(--blue); }
+.prompt-send.stopping  { color: var(--red); }
+
+.prompt-send svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}

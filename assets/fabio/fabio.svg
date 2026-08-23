@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" fill="none">
+  <!-- Outer glow ring -->
+  <circle cx="36" cy="36" r="34" stroke="rgba(77,158,255,0.15)" stroke-width="1.5"/>
+
+  <!-- Main body — dark stone -->
+  <rect x="18" y="20" width="36" height="34" rx="10" fill="#18181d"/>
+  <rect x="18" y="20" width="36" height="34" rx="10" stroke="rgba(77,158,255,0.30)" stroke-width="1"/>
+
+  <!-- Eyes -->
+  <rect x="24" y="30" width="8" height="6" rx="2" fill="#4d9eff"/>
+  <rect x="40" y="30" width="8" height="6" rx="2" fill="#4d9eff"/>
+
+  <!-- Eye inner — dark pupils -->
+  <rect x="26" y="32" width="4" height="3" rx="1" fill="#0a0a0b"/>
+  <rect x="42" y="32" width="4" height="3" rx="1" fill="#0a0a0b"/>
+
+  <!-- Eye glint -->
+  <rect x="27" y="32" width="1.5" height="1.5" rx="0.5" fill="rgba(255,255,255,0.8)"/>
+  <rect x="43" y="32" width="1.5" height="1.5" rx="0.5" fill="rgba(255,255,255,0.8)"/>
+
+  <!-- Mouth — subtle neutral -->
+  <rect x="29" y="42" width="14" height="3" rx="1.5" fill="#222229"/>
+  <rect x="29" y="42" width="14" height="3" rx="1.5" stroke="rgba(77,158,255,0.2)" stroke-width="0.5"/>
+
+  <!-- Antenna -->
+  <line x1="36" y1="20" x2="36" y2="13" stroke="rgba(77,158,255,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="36" cy="11" r="2.5" fill="#4d9eff" opacity="0.8"/>
+
+  <!-- Side fins / ears -->
+  <rect x="10" y="28" width="8" height="12" rx="4" fill="#18181d" stroke="rgba(77,158,255,0.25)" stroke-width="0.8"/>
+  <rect x="54" y="28" width="8" height="12" rx="4" fill="#18181d" stroke="rgba(77,158,255,0.25)" stroke-width="0.8"/>
+
+  <!-- Chest detail — accent bar -->
+  <rect x="26" y="49" width="20" height="2" rx="1" fill="rgba(77,158,255,0.25)"/>
+</svg>

@@ -1,0 +1,7 @@
+{
+  "name": "@fabion/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "description": "Shared contracts and base classes for Fabion"
+}

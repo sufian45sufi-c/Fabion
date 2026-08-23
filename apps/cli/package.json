@@ -1,0 +1,15 @@
+{
+  "name": "@fabion/cli",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "fabion": "./index.js"
+  },
+  "description": "The Fabion agentic CLI",
+  "dependencies": {
+    "@fabion/core":   "*",
+    "@fabion/agents": "*",
+    "@fabion/tools":  "*"
+  }
+}
