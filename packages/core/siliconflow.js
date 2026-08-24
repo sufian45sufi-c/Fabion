@@ -1,0 +1,77 @@
+import { ModelProvider } from './index.js';
+
+const SILICONFLOW_BASE_URL = 'https://api.siliconflow.cn/v1';
+const DEFAULT_MODEL = 'deepseek-ai/DeepSeek-V3';
+
+export class SiliconFlowProvider extends ModelProvider {
+  constructor(model = DEFAULT_MODEL) {
+    super({
+      id:          'siliconflow',
+      name:        `SiliconFlow / ${model}`,
+      description: 'SiliconFlow open-weight model API',
+      isLocal:     false,
+    });
+
+    this.model  = model;
+    this.apiKey = process.env.SILICONFLOW_API_KEY
+                  ?? 'sk-qytaufznflzqozurtlpvxtojlpajwmfdchqfjdaajnokkbck';
+  }
+
+  async generate(messages, options = {}) {
+    try {
+      const response = await fetch(`${SILICONFLOW_BASE_URL}/chat/completions`, {
+        method:  'POST',
+        headers: this._headers(),
+        body:    JSON.stringify(this._body(messages, options, false)),
+        signal:  AbortSignal.timeout(60_000),
+      });
+
+      if (!response.ok) {
+        const err = await response.text().catch(() => response.statusText);
+        return { ok: false, error: `SiliconFlow error ${response.status}: ${err}` };
+      }
+
+      const data = await response.json();
+      const text = data.choices?.[0]?.message?.content ?? '';
+      return { ok: true, text };
+
+    } catch (err) {
+      return { ok: false, error: err.message ?? String(err) };
+    }
+  }
+
+  async *stream(messages, options = {}) {
+    const result = await this.generate(messages, options);
+    if (result.ok) yield result.text;
+    else yield `[Error: ${result.error}]`;
+  }
+
+  async healthCheck() {
+    try {
+      const response = await fetch(`${SILICONFLOW_BASE_URL}/models`, {
+        headers: this._headers(),
+        signal:  AbortSignal.timeout(8_000),
+      });
+      return response.ok ? { ok: true } : { ok: false, error: `${response.status}` };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  }
+
+  _headers() {
+    return {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${this.apiKey}`,
+    };
+  }
+
+  _body(messages, options, stream) {
+    return {
+      model:       this.model,
+      messages,
+      stream,
+      max_tokens:  options.maxTokens   ?? 2048,
+      temperature: options.temperature ?? 0.7,
+    };
+  }
+}
