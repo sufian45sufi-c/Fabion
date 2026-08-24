@@ -18,7 +18,7 @@ import * as readline from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 
 import { FabionAgent } from '../../packages/agents/index.js';
-import { SiliconFlowProvider } from '../../packages/core/siliconflow.js';
+import { OpenRouterProvider } from '../../packages/core/qwen.js';
 import { printBanner, printLine, printBlank, printPrompt,
          printDivider, printFabioSays, printHelp,
          printStatus, startSpinner, stopSpinner, clr, sym } from './ui.js';
@@ -29,7 +29,7 @@ import { printBanner, printLine, printBlank, printPrompt,
 // The agent will give stub responses until then.
 
 const agent = new FabionAgent({
-  model: new SiliconFlowProvider(),
+  model: new OpenRouterProvider(),
   tools:  [],     // tools added in Phase 3
   skills: [],     // skills added in Phase 5
 });
