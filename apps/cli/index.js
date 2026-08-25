@@ -1,3 +1,12 @@
+import { readFileSync } from 'node:fs';
+try {
+  const env = readFileSync(new URL('../../.env', import.meta.url).pathname, 'utf8');
+  for (const line of env.split('\n')) {
+    const [key, ...val] = line.split('=');
+    if (key && val.length) process.env[key.trim()] = val.join('=').trim();
+  }
+} catch {}
+
 /**
  * apps/cli/index.js
  *

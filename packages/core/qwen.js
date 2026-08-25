@@ -1,7 +1,7 @@
 import { ModelProvider } from './index.js';
 
 const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
-const DEFAULT_MODEL       = 'qwen/qwen-2.5-7b-instruct';
+const DEFAULT_MODEL       = 'nvidia/nemotron-3-ultra-550b-a55b:free';
 
 export class OpenRouterProvider extends ModelProvider {
   constructor(model = DEFAULT_MODEL) {
