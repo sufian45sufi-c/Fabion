@@ -1,28 +1,13 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-import { c, syntaxHighlight, stripAnsi, visibleLength, truncate } from './theme.js';
+import { c, FABIO_ART, activityLabel, syntaxHighlight, stripAnsi, visibleLength, truncate } from './theme.js';
 import { cwd } from 'node:process';
 import { basename } from 'node:path';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const VERSION   = 'v0.1.0';
-const SIDEBAR_WIDTH = 34;
+const VERSION       = '0.1.0';
+const SIDEBAR_WIDTH = 32;
 const SIDEBAR_MIN_W = 100;
-const SPINNER = ['◐','◓','◑','◒'];
-
-function loadFabioArt() {
-  try {
-    const p = join(__dirname, '../../../assets/fabio/fabio.ansi');
-    const content = readFileSync(p, 'utf8');
-    const lines = content.split('\n');
-    while (lines.length && !lines[lines.length-1]) lines.pop();
-    return lines;
-  } catch { return []; }
-}
-
-const FABIO_ART = loadFabioArt();
-const FABIO_W   = FABIO_ART.length > 0 ? visibleLength(FABIO_ART[0]) : 0;
+const TOP_BAR_H     = 1;
+const BOTTOM_BAR_H  = 1;
+const INPUT_H       = 3;
 
 export class FabionTUI {
   constructor({ agent, modelName = 'unknown' }) {
@@ -30,28 +15,33 @@ export class FabionTUI {
     this.modelName   = modelName;
     this.cwd         = cwd();
     this.projectName = basename(this.cwd);
-    this.messages    = [];
-    this.activities  = [];
-    this.input       = '';
-    this.cursor      = 0;
-    this.history     = [];
-    this.historyIdx  = -1;
+
+    this.messages     = [];
+    this.input        = '';
+    this.cursor       = 0;
+    this.history      = [];
+    this.historyIdx   = -1;
     this.isGenerating = false;
-    this.activity    = 'idle';
+    this.activity     = 'idle';
+    this.activityText = activityLabel.idle;
     this.scrollOffset = 0;
-    this._chatLines  = [];
-    this._dirty      = true;
-    this._spinnerFrame = 0;
-    this._spinnerTimer = null;
-    this.sessionStart = Date.now();
-    this.toolCalls   = 0;
-    this.tokenCount  = 0;
-    this.filesContext = [];
-    this.toolStats   = { Read: 0, Edit: 0, Search: 0, Run: 0 };
+    this._chatLines   = [];
+    this._dirty       = true;
+
+    // Session stats
+    this.sessionStart  = Date.now();
+    this.toolCalls     = 0;
+    this.tokenCount    = 0;
+    this.filesContext  = [];
+    this.toolStats     = { Read: 0, Edit: 0, Search: 0, Run: 0 };
+
     this.width  = process.stdout.columns ?? 120;
     this.height = process.stdout.rows    ?? 30;
+
     this.agent.on(e => this._onAgentEvent(e));
   }
+
+  // ── Start ──────────────────────────────────────────────────────────────────
 
   async start() {
     this._setupTerminal();
@@ -64,13 +54,13 @@ export class FabionTUI {
     if (process.stdin.isTTY) process.stdin.setRawMode(true);
     process.stdin.resume();
     process.stdin.setEncoding('utf8');
+
     const cleanup = () => {
-      this._stopSpinner();
       process.stdout.write('\x1b[?25h\x1b[?1049l');
       if (process.stdin.isTTY) process.stdin.setRawMode(false);
       process.exit(0);
     };
-    process.on('SIGINT', cleanup);
+    process.on('SIGINT',  cleanup);
     process.on('SIGTERM', cleanup);
     process.stdout.on('resize', () => {
       this.width  = process.stdout.columns ?? 120;
@@ -84,17 +74,7 @@ export class FabionTUI {
     return new Promise(() => { process.stdin.on('data', k => this._handleKey(k)); });
   }
 
-  _startSpinner() {
-    if (this._spinnerTimer) return;
-    this._spinnerTimer = setInterval(() => {
-      this._spinnerFrame = (this._spinnerFrame + 1) % SPINNER.length;
-      this._render();
-    }, 120);
-  }
-
-  _stopSpinner() {
-    if (this._spinnerTimer) { clearInterval(this._spinnerTimer); this._spinnerTimer = null; }
-  }
+  // ── Keys ───────────────────────────────────────────────────────────────────
 
   _handleKey(key) {
     if (key === '\x03') { process.emit('SIGINT'); return; }
@@ -107,346 +87,387 @@ export class FabionTUI {
     if (key === '\x1b[D') { this.cursor = Math.max(0, this.cursor-1); this._render(); return; }
     if (key === '\x1b[H' || key === '\x01') { this.cursor = 0; this._render(); return; }
     if (key === '\x1b[F' || key === '\x05') { this.cursor = this.input.length; this._render(); return; }
-    if (key === '\x1b[5~') { this.scrollOffset = Math.min(this.scrollOffset+5, Math.max(0,this._chatLines.length-1)); this._render(); return; }
+    if (key === '\x1b[5~') { this.scrollOffset = Math.min(this.scrollOffset+5, Math.max(0, this._chatLines.length-1)); this._render(); return; }
     if (key === '\x1b[6~') { this.scrollOffset = Math.max(0, this.scrollOffset-5); this._render(); return; }
-    if (key === '\x15') { this.input=''; this.cursor=0; this._render(); return; }
-    if (key.length===1 && key>=' ') {
-      this.input = this.input.slice(0,this.cursor)+key+this.input.slice(this.cursor);
-      this.cursor++; this._render(); return;
-    }
-    if (key.length>1 && !key.startsWith('\x1b')) {
-      this.input = this.input.slice(0,this.cursor)+key+this.input.slice(this.cursor);
-      this.cursor += key.length; this._render();
-    }
+    if (key === '\x15') { this.input = ''; this.cursor = 0; this._render(); return; }
+    if (key.length === 1 && key >= ' ') { this.input = this.input.slice(0,this.cursor)+key+this.input.slice(this.cursor); this.cursor++; this._render(); return; }
+    if (key.length > 1 && !key.startsWith('\x1b')) { this.input = this.input.slice(0,this.cursor)+key+this.input.slice(this.cursor); this.cursor += key.length; this._render(); }
   }
 
   _backspace() {
-    if (this.cursor===0) return;
+    if (this.cursor === 0) return;
     this.input = this.input.slice(0,this.cursor-1)+this.input.slice(this.cursor);
-    this.cursor--; this._render();
+    this.cursor--;
+    this._render();
   }
 
   _histUp() {
     if (!this.history.length) return;
     this.historyIdx = Math.min(this.historyIdx+1, this.history.length-1);
-    this.input = this.history[this.historyIdx]??'';
+    this.input = this.history[this.historyIdx] ?? '';
     this.cursor = this.input.length;
   }
 
   _histDown() {
-    if (this.historyIdx<=0) { this.historyIdx=-1; this.input=''; this.cursor=0; return; }
+    if (this.historyIdx <= 0) { this.historyIdx = -1; this.input = ''; this.cursor = 0; return; }
     this.historyIdx--;
-    this.input = this.history[this.historyIdx]??'';
+    this.input = this.history[this.historyIdx] ?? '';
     this.cursor = this.input.length;
   }
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
 
   async _submit() {
     const text = this.input.trim();
     if (!text) return;
     this.history.unshift(text);
-    this.historyIdx=-1; this.input=''; this.cursor=0;
+    this.historyIdx = -1;
+    this.input = '';
+    this.cursor = 0;
 
-    if (text==='/clear') { this.messages=[]; this.activities=[]; this._dirty=true; this._render(); return; }
-    if (text==='/help')  { this._addHelp(); return; }
-    if (text==='/exit'||text==='exit') { process.emit('SIGINT'); return; }
+    if (text === '/clear') { this.messages = []; this._dirty = true; this._render(); return; }
+    if (text === '/help')  { this._addHelp(); return; }
+    if (text === '/exit' || text === 'exit') { process.emit('SIGINT'); return; }
 
-    this.messages.push({ role:'user', content:text });
-    this.activities=[];
-    this.isGenerating=true;
-    this.activity='thinking';
-    this.scrollOffset=0;
-    this._dirty=true;
-    this._startSpinner();
+    this.messages.push({ role: 'user', content: text });
+    this.isGenerating = true;
+    this._setActivity('thinking');
+    this.scrollOffset = 0;
+    this._dirty = true;
     this._render();
 
     try {
       const r = await this.agent.run(text);
-      this._stopSpinner();
-      this.messages.push({ role:'assistant', content:r });
-      this.tokenCount += Math.floor(r.length/4);
+      this.messages.push({ role: 'assistant', content: r });
     } catch(e) {
-      this._stopSpinner();
-      this.messages.push({ role:'error', content: e.message??String(e) });
+      this.messages.push({ role: 'error', content: e.message ?? String(e) });
     } finally {
-      this.isGenerating=false; this.activity='idle';
-      this.scrollOffset=0; this._dirty=true; this._render();
+      this.isGenerating = false;
+      this._setActivity('idle');
+      this.scrollOffset = 0;
+      this._dirty = true;
+      this._render();
     }
   }
 
+  // ── Agent events ───────────────────────────────────────────────────────────
+
   _onAgentEvent(e) {
     switch(e.type) {
-      case 'thinking': this.activity='thinking'; break;
+      case 'thinking':    this._setActivity('thinking'); break;
       case 'tool_call':
-        this.activity='working'; this.toolCalls++;
-        const tn=(e.toolName??'').toLowerCase();
-        if(tn.includes('read'))   { this.toolStats.Read++;   this.activities.push({text:`Reading ${e.input?.path??'file'}`,done:false}); }
-        if(tn.includes('write')||tn.includes('edit')) { this.toolStats.Edit++; this.activities.push({text:`Editing ${e.input?.path??'file'}`,done:false}); }
-        if(tn.includes('search')) { this.toolStats.Search++; this.activities.push({text:`Searching ${e.input?.query??'...'}`,done:false}); }
-        if(tn.includes('run'))    { this.toolStats.Run++;    this.activities.push({text:`Running: ${e.input?.command??'command'}`,done:false}); }
-        this._dirty=true; break;
-      case 'tool_result':
-        if(this.activities.length>0) {
-          const last=this.activities[this.activities.length-1];
-          last.done=e.success!==false; last.failed=e.success===false;
-          if(last.done&&e.output){ const n=String(e.output).split('\n').length; last.detail=`${n} lines`; }
-        }
-        this._dirty=true; break;
-      case 'done':  this.activity='idle';  break;
-      case 'error': this.activity='error'; break;
+        this._setActivity('running');
+        this.toolCalls++;
+        const tn = (e.toolName ?? '').toLowerCase();
+        if (tn.includes('read'))   this.toolStats.Read++;
+        if (tn.includes('write') || tn.includes('edit')) this.toolStats.Edit++;
+        if (tn.includes('search')) this.toolStats.Search++;
+        if (tn.includes('run') || tn.includes('command')) this.toolStats.Run++;
+        break;
+      case 'done':  this._setActivity('done');  break;
+      case 'error': this._setActivity('error'); break;
     }
     this._render();
   }
 
-  _sessionTime() {
-    const s=Math.floor((Date.now()-this.sessionStart)/1000);
-    return `${Math.floor(s/60)}m ${String(s%60).padStart(2,'0')}s`;
+  _setActivity(s) {
+    this.activity     = s;
+    this.activityText = activityLabel[s] ?? activityLabel.idle;
   }
 
-  // ── MAIN RENDER ─────────────────────────────────────────────────────────────
+  // ── Session time ───────────────────────────────────────────────────────────
+
+  _sessionTime() {
+    const s = Math.floor((Date.now() - this.sessionStart) / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}m ${sec}s`;
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   _render() {
-    if (this.messages.length===0 && !this.isGenerating) {
-      this._renderPreChat();
-    } else {
-      this._renderChat();
-    }
-  }
-
-  // ── PRE-CHAT — matches Image 2 exactly ────────────────────────────────────
-  //
-  //   [FABIO]   Fabion Code v0.1.0
-  //             Fabio  1.0 · Fabion Enterprise
-  //             /workspaces/Fabion
-  //   ─────────────────────────────────────
-  //   > Ask Fabio anything...
-  //   ─────────────────────────────────────
-
-  _renderPreChat() {
     const W = this.width;
     const H = this.height;
-    const frame = [];
 
-    frame.push('');
-
-    // Info lines that sit beside the mascot
-    const info = [
-      '',
-      c.bold(c.blue('Fabion Code')) + c.gray(' '+VERSION),
-      c.bold(c.cream('Fabio')) + c.gray('  1.0 · ') + c.bold(c.blue('Fabion Enterprise')),
-      c.gray(this.cwd),
-    ];
-
-    const rows = Math.max(FABIO_ART.length, info.length);
-
-    for (let i=0; i<rows; i++) {
-      const art    = FABIO_ART[i] ?? '';
-      const artVis = visibleLength(art);
-      const artPad = ' '.repeat(Math.max(0, FABIO_W - artVis));
-      const inf    = info[i] ?? '';
-      frame.push(' ' + art + artPad + '  ' + inf);
-    }
-
-    frame.push('');
-    frame.push(c.gray('─'.repeat(W)));
-    frame.push(this._inputLine(W));
-    frame.push(c.gray('─'.repeat(W)));
-
-    while (frame.length < H) frame.push('');
-
-    process.stdout.write('\x1b[H' + frame.slice(0,H).join('\r\n'));
-  }
-
-  // ── CHAT — matches Image 1 exactly ────────────────────────────────────────
-
-  _renderChat() {
-    const W = this.width;
-    const H = this.height;
     const showSidebar = W >= SIDEBAR_MIN_W;
-    const SW    = showSidebar ? SIDEBAR_WIDTH : 0;
+    const SW = showSidebar ? SIDEBAR_WIDTH : 0;
     const mainW = W - SW;
-    const chatH = H - 2 - 3 - 1; // topbar+div, div+input+div, statusbar
+    const chatH = H - TOP_BAR_H - INPUT_H - BOTTOM_BAR_H;
+
     const frame = [];
 
-    // Top bar
-    const icon   = c.blue('⬡');
-    const app    = c.bold(c.blue('Fabion'))+c.gray(' '+VERSION);
-    const path   = c.grayMid('~/'+this.projectName);
-    const model  = c.gray('Model: ')+c.grayMid(truncate(stripAnsi(this.modelName),26));
-    const online = c.green('● Online');
-    const lTop=` ${icon} ${app}`, cTop=path, rTop=`${model}   ${online} `;
-    const lv=visibleLength(lTop), cv=visibleLength(cTop), rv=visibleLength(rTop);
-    const g=W-lv-cv-rv, lp=Math.max(0,Math.floor(g/2)), rp=Math.max(0,g-lp);
-    frame.push(lTop+' '.repeat(lp)+cTop+' '.repeat(rp)+rTop);
-    frame.push(c.gray('─'.repeat(W)));
+    // ── Top bar ──────────────────────────────────────────────────────────────
+    const fabioIcon = c.blue('⬡');
+    const appName   = c.bold(c.blue('Fabion')) + c.gray(` v${VERSION}`);
+    const pathStr   = c.grayMid(`~/${this.projectName}`);
+    const modelStr  = c.gray('Model: ') + c.grayLight(truncate(stripAnsi(this.modelName), 30));
+    const onlineStr = c.green('● Online');
 
-    // Chat lines
-    if (this._dirty) { this._chatLines=this._buildChat(mainW-2); this._dirty=false; }
-    const total=this._chatLines.length;
-    const vs=Math.max(0,total-chatH-this.scrollOffset);
-    const ve=Math.max(0,total-this.scrollOffset);
-    const slice=this._chatLines.slice(vs,ve);
-    const rows=[];
-    while (rows.length+slice.length<chatH) rows.push('');
-    rows.push(...slice);
+    const leftTop  = ` ${fabioIcon} ${appName}   ${pathStr}`;
+    const rightTop = `${modelStr}   ${onlineStr} `;
+    const leftVis  = visibleLength(leftTop);
+    const rightVis = visibleLength(rightTop);
+    const topGap   = Math.max(1, W - leftVis - rightVis);
+    frame.push(c.bgBar(leftTop + ' '.repeat(topGap) + rightTop));
 
-    const sidebar=showSidebar?this._sidebar(chatH,SW):[];
-    for (let i=0;i<chatH;i++) {
-      const row=rows[i]??'';
-      const pad=' '.repeat(Math.max(0,mainW-visibleLength(row)));
-      frame.push(showSidebar?row+pad+(sidebar[i]??''):row+pad);
+    // ── Chat + sidebar rows ───────────────────────────────────────────────────
+    if (this._dirty) {
+      this._chatLines = this._buildChatLines(mainW - 2);
+      this._dirty = false;
     }
 
-    // Input
-    frame.push(c.gray('─'.repeat(W)));
-    if (this.isGenerating) {
-      const sp=c.blue(SPINNER[this._spinnerFrame]);
-      frame.push(`  ${sp} `+(this.activity==='thinking'?c.blue('Fabio is thinking...'):c.yellow('Fabio is working...')));
-    } else {
-      frame.push(this._inputLine(W));
-    }
-    frame.push(c.gray('─'.repeat(W)));
+    const total = this._chatLines.length;
+    const start = Math.max(0, total - chatH - this.scrollOffset);
+    const end   = Math.max(0, total - this.scrollOffset);
+    const slice = this._chatLines.slice(start, end);
 
-    // Status bar
-    const fl=c.blue('⊡ ~/'+this.projectName);
-    const br=c.grayMid('⎇  main');
-    const ag=c.green('● Agent: Fabio');
-    const fb=c.blue('⬡');
-    const wk=this.isGenerating?c.blue(SPINNER[this._spinnerFrame]+' '+(this.activity==='thinking'?'Thinking':'Working')):c.gray('◈ Idle');
-    const rr=c.gray('Type / for commands')+'  '+c.grayMid('?');
-    const lb=` ${fl}   ${br}   ${ag}   ${fb}   ${wk}`;
-    const bg=Math.max(1,W-visibleLength(lb)-visibleLength(rr)-1);
-    frame.push(lb+' '.repeat(bg)+rr+' ');
+    const chatRows = [];
 
-    process.stdout.write('\x1b[H'+frame.slice(0,H).join('\r\n'));
-  }
-
-  _inputLine(W) {
-    let d=this.input, cp=this.cursor;
-    const iw=W-6;
-    if (d.length>iw) { const s=Math.max(0,cp-Math.floor(iw/2)); d=d.slice(s,s+iw); cp=cp-s; }
-    const b=d.slice(0,cp), at=d[cp]??' ', a=d.slice(cp+1);
-    const rendered=c.grayLight(b)+c.bgInput(c.white(at))+c.grayLight(a);
-    const ph=this.input.length===0?c.dim(c.gray('Ask Fabio anything...')):'';
-    return `  ${c.bold(c.blue('> '))}${this.input.length?rendered:ph}`;
-  }
-
-  _sidebar(height, width) {
-    const rows=[];
-    const w=width;
-    const row=(content='')=>{ const v=visibleLength(content); return c.gray('│')+' '+content+' '.repeat(Math.max(0,w-v-2)); };
-    const H=text=>row(c.bold(c.blue(text)));
-    const blank=()=>row('');
-    const div=()=>row(c.gray('─'.repeat(w-2)));
-    rows.push(blank());
-    rows.push(H('SESSION'));
-    rows.push(row(c.gray('◷ ')+c.grayLight(this._sessionTime())));
-    rows.push(row(c.gray('⌁ ')+c.grayLight(this.toolCalls+' tool calls')));
-    rows.push(row(c.gray('● ')+c.grayLight(this.tokenCount.toLocaleString()+' tokens')));
-    rows.push(blank()); rows.push(div()); rows.push(H('FILES CONTEXT'));
-    if (!this.filesContext.length) rows.push(row(c.dim(c.gray('No files yet'))));
-    else for (const f of this.filesContext.slice(0,6)) rows.push(row(c.grayMid(truncate(f,w-4))));
-    rows.push(blank()); rows.push(div()); rows.push(H('TOOLS'));
-    const tc={Read:c.blue,Edit:c.orange,Search:c.yellow,Run:c.grayLight};
-    for (const [n,cnt] of Object.entries(this.toolStats)) {
-      const col=tc[n]??c.grayLight;
-      rows.push(row(col(n)+' '.repeat(Math.max(1,20-n.length))+(cnt>0?c.grayLight(String(cnt)):c.dim(c.gray('0')))));
-    }
-    rows.push(blank()); rows.push(div()); rows.push(H('MODEL'));
-    rows.push(row(c.grayMid(truncate(stripAnsi(this.modelName),w-4))));
-    rows.push(row(c.dim(c.gray('128K context'))));
-    while (rows.length<height) rows.push(blank());
-    return rows.slice(0,height);
-  }
-
-  _buildChat(width) {
-    const lines=[];
-    const artH=Math.min(FABIO_ART.length,4);
-    const greet=[
-      c.bold(c.blue('Fabio'))+c.gray(' (Fabion AI)'),
-      c.grayLight('Hello '+(process.env.USER??'Sufian')+'! 👋'),
-      c.gray('What shall we build today?'),
+    // Header inside main area — Fabio avatar + greeting
+    const avatarLines = FABIO_ART.slice(0, 3);
+    const headerLines = [
+      '',
+      `  ${c.bold(c.blue('Fabio'))} ${c.grayMid('(Fabion AI)')}`,
+      `  ${c.grayMid('Hello ' + this.projectName + '!')}`,
+      `  ${c.gray('What shall we build today?')}`,
+      '',
     ];
-    for (let i=0;i<Math.max(artH,greet.length);i++) {
-      const av=FABIO_ART[i]??'';
-      const pad=' '.repeat(Math.max(0,FABIO_W-visibleLength(av)));
-      lines.push(' '+av+pad+'  '+(greet[i]??''));
-    }
-    lines.push('');
 
-    for (const msg of this.messages) {
-      if (msg.role==='user') {
-        lines.push('');
-        lines.push(c.teal('> ')+c.bold(c.grayLight('You: '))+c.cream(msg.content));
-      } else if (msg.role==='assistant') {
-        lines.push('');
-        lines.push(c.blue('● ')+c.bold(c.blue('Fabio: ')));
-        for (const l of this._md(msg.content,width-4)) lines.push('  '+l);
-        for (const act of this.activities) {
-          const icon=act.failed?c.red('✗'):act.done?c.green('✓'):c.gray('○');
-          const text=act.done?c.green(act.text)+(act.detail?c.gray(' '+act.detail):''):c.gray(act.text);
-          lines.push(`  ${icon} ${text}`);
-        }
-      } else if (msg.role==='error') {
-        lines.push('');
-        lines.push(c.red('✗ Error: ')+c.red(msg.content));
+    // Only show header if no messages
+    if (this.messages.length === 0) {
+      // Fabio avatar + text side by side
+      const maxHeaderLines = Math.max(avatarLines.length, headerLines.length);
+      for (let i = 0; i < maxHeaderLines; i++) {
+        const av = avatarLines[i] ?? '';
+        const hl = headerLines[i] ?? '';
+        const avVis = visibleLength(av);
+        chatRows.push((av || ' '.repeat(avVis || 6)) + '  ' + hl);
+      }
+      chatRows.push('');
+      chatRows.push(c.gray('  ─'.repeat(Math.floor((mainW - 2) / 2))));
+      chatRows.push('');
+      chatRows.push(c.dim(c.gray('  /help for commands · /clear to reset · Ctrl+C to quit')));
+    }
+
+    // Pad top of chat
+    while (chatRows.length + slice.length < chatH) chatRows.push('');
+    chatRows.push(...slice);
+
+    // Sidebar content
+    const sidebarRows = showSidebar ? this._buildSidebar(chatH, SW) : [];
+
+    // Compose rows
+    for (let i = 0; i < chatH; i++) {
+      const chatLine = chatRows[i - (chatH - chatRows.length)] ?? '';
+      const chatVis  = visibleLength(chatLine);
+      const chatPad  = ' '.repeat(Math.max(0, mainW - chatVis));
+
+      if (showSidebar) {
+        const sidebarLine = sidebarRows[i] ?? ' '.repeat(SW);
+        frame.push(chatLine + chatPad + sidebarLine);
+      } else {
+        frame.push(chatLine + chatPad);
       }
     }
-    if (this.isGenerating&&this.activities.length>0) {
+
+    // ── Input bar ─────────────────────────────────────────────────────────────
+    frame.push(c.gray('─'.repeat(W)));
+
+    if (this.isGenerating) {
+      frame.push(`  ${this.activityText}   ${c.dim(c.gray('Ctrl+C to stop'))}`);
+    } else {
+      let display = this.input;
+      let cp      = this.cursor;
+      const iw    = W - 6;
+      if (display.length > iw) {
+        const s = Math.max(0, cp - Math.floor(iw/2));
+        display = display.slice(s, s+iw);
+        cp = cp - s;
+      }
+      const before = display.slice(0, cp);
+      const at     = display[cp] ?? ' ';
+      const after  = display.slice(cp+1);
+      const rendered = c.grayLight(before) + c.bgInput(c.white(at)) + c.grayLight(after);
+      const ph = this.input.length === 0 ? c.dim(c.gray('Ask Fabio anything...')) : '';
+      frame.push(`  ${c.bold(c.teal('> '))}${this.input.length ? rendered : ph}`);
+    }
+
+    frame.push(c.gray('─'.repeat(W)));
+
+    // ── Bottom bar ────────────────────────────────────────────────────────────
+    const folderIcon = c.blue('⊡');
+    const branchIcon = c.grayMid('⎇');
+    const leftBot  = ` ${folderIcon} ${c.blue('~/' + this.projectName)}   ${branchIcon} ${c.grayMid('main')}   ${c.green('● Agent: Fabio')}   ${c.blue('⬡')}   ${this.activityText}`;
+    const rightBot = c.gray('Type / for commands   ') + c.grayMid('?');
+    const leftBotVis  = visibleLength(leftBot);
+    const rightBotVis = visibleLength(rightBot);
+    const botGap = Math.max(1, W - leftBotVis - rightBotVis);
+    frame.push(c.bgBar(leftBot + ' '.repeat(botGap) + rightBot));
+
+    // ── Write ─────────────────────────────────────────────────────────────────
+    process.stdout.write('\x1b[H' + frame.slice(0, H).join('\r\n'));
+  }
+
+  // ── Sidebar ────────────────────────────────────────────────────────────────
+
+  _buildSidebar(height, width) {
+    const rows = [];
+    const w = width - 1;
+
+    const line = (content = '') => {
+      const v = visibleLength(content);
+      return c.gray('│') + content + ' '.repeat(Math.max(0, w - v));
+    };
+
+    const heading = text => line(' ' + c.bold(c.grayMid(text.toUpperCase())));
+    const blank   = ()   => line();
+    const divider = ()   => line(c.gray('─'.repeat(w - 1)));
+
+    // SESSION
+    rows.push(blank());
+    rows.push(heading('Session'));
+    rows.push(line(`  ${c.gray('⏱')} ${c.grayLight(this._sessionTime())}`));
+    rows.push(line(`  ${c.gray('⚡')} ${c.grayLight(this.toolCalls + ' tool calls')}`));
+    rows.push(line(`  ${c.gray('◉')} ${c.grayLight(this.tokenCount + ' tokens')}`));
+
+    // FILES CONTEXT
+    rows.push(blank());
+    rows.push(divider());
+    rows.push(heading('Files Context'));
+    if (this.filesContext.length === 0) {
+      rows.push(line(`  ${c.dim(c.gray('No files yet'))}`));
+    } else {
+      for (const f of this.filesContext.slice(0, 5)) {
+        rows.push(line(`  ${c.grayMid(truncate(f, w - 4))}`));
+      }
+    }
+
+    // TOOLS
+    rows.push(blank());
+    rows.push(divider());
+    rows.push(heading('Tools'));
+    for (const [name, count] of Object.entries(this.toolStats)) {
+      if (count === 0) continue;
+      const col = name === 'Read' ? c.blue : name === 'Edit' ? c.orange : name === 'Search' ? c.yellow : c.green;
+      rows.push(line(`  ${col(name.padEnd(10))}${c.grayMid(String(count))}`));
+    }
+    if (Object.values(this.toolStats).every(v => v === 0)) {
+      rows.push(line(`  ${c.dim(c.gray('No tools used yet'))}`));
+    }
+
+    // MODEL
+    rows.push(blank());
+    rows.push(divider());
+    rows.push(heading('Model'));
+    rows.push(line(`  ${c.grayLight(truncate(stripAnsi(this.modelName), w - 4))}`));
+    rows.push(line(`  ${c.dim(c.gray('128K context'))}`));
+
+    // Pad to height
+    while (rows.length < height) rows.push(blank());
+
+    return rows.slice(0, height);
+  }
+
+  // ── Build chat lines ───────────────────────────────────────────────────────
+
+  _buildChatLines(width) {
+    const lines = [];
+    for (const msg of this.messages) {
       lines.push('');
-      for (const act of this.activities) {
-        const icon=act.failed?c.red('✗'):act.done?c.green('✓'):c.gray('○');
-        lines.push(`  ${icon} `+(act.done?c.green(act.text)+(act.detail?c.gray(' '+act.detail):''):c.gray(act.text)));
+      if (msg.role === 'user') {
+        lines.push(c.bold(c.teal('> ')) + c.bold(c.grayLight('You: ')) + c.cream(msg.content));
+      } else if (msg.role === 'assistant') {
+        lines.push(c.blue('● ') + c.bold(c.blue('Fabio: ')));
+        for (const l of this._renderMd(msg.content, width - 2)) {
+          lines.push('  ' + l);
+        }
+      } else if (msg.role === 'activity') {
+        lines.push(`  ${c.gray('○')} ${c.dim(c.grayMid(msg.content))}`);
+      } else if (msg.role === 'error') {
+        lines.push(c.red('✗ Error: ') + c.red(msg.content));
       }
     }
     if (lines.length) lines.push('');
     return lines;
   }
 
-  _md(text, width) {
+  _renderMd(text, width) {
     if (!text) return [c.gray('...')];
-    const out=[]; let inCode=false,lang='',codeLines=[];
+    const out = []; let inCode = false; let lang = ''; let codeLines = [];
+
     for (const raw of text.split('\n')) {
       if (raw.startsWith('```')) {
-        if (!inCode) { inCode=true; lang=raw.slice(3).trim(); codeLines=[]; }
+        if (!inCode) { inCode = true; lang = raw.slice(3).trim(); codeLines = []; }
         else {
-          const bar=c.gray('  '+'─'.repeat(Math.min(width-4,52)));
-          if (lang) out.push(c.dim(c.blue('  '+lang)));
+          // Render code block with syntax highlighting
+          const bar = c.gray('  ' + '─'.repeat(Math.min(width - 4, 50)));
+          const langLabel = lang ? c.dim(c.grayMid('  ' + lang)) : '';
+          if (langLabel) out.push(langLabel);
           out.push(bar);
-          for (const cl of syntaxHighlight(codeLines.join('\n'),lang).split('\n')) out.push(c.bgCode('  '+cl));
+          const highlighted = syntaxHighlight(codeLines.join('\n'), lang);
+          for (const cl of highlighted.split('\n')) {
+            out.push(c.bgCode('  ' + cl + ' '.repeat(Math.max(0, width - visibleLength(cl) - 4))) + '\x1b[0m');
+          }
           out.push(bar);
-          inCode=false; lang=''; codeLines=[];
+          inCode = false; lang = ''; codeLines = [];
         }
         continue;
       }
       if (inCode) { codeLines.push(raw); continue; }
+
+      // Tool activity lines
+      if (raw.startsWith('○ ') || raw.startsWith('✓ ') || raw.startsWith('◌ ')) {
+        const icon = raw.startsWith('✓') ? c.green('✓') : c.gray('○');
+        out.push(`${icon} ${c.grayMid(raw.slice(2))}`);
+        continue;
+      }
+
       if (raw.startsWith('# '))   { out.push(c.bold(c.cream(raw.slice(2)))); continue; }
       if (raw.startsWith('## '))  { out.push(c.bold(c.grayLight(raw.slice(3)))); continue; }
-      if (raw.match(/^[\*\-] /))  { out.push(c.blue('  ○')+' '+this._il(raw.slice(2))); continue; }
-      if (raw.trim()==='')         { out.push(''); continue; }
-      for (const l of this._wrap(stripAnsi(this._il(raw)),width-2)) out.push(this._il(l));
+      if (raw.startsWith('### ')) { out.push(c.bold(c.gray(raw.slice(4)))); continue; }
+      if (raw.match(/^[\*\-] /))  { out.push(c.blue('  ○') + ' ' + this._inline(raw.slice(2))); continue; }
+      if (raw.match(/^\d+\. /))   { out.push(c.grayMid('  ' + raw.match(/^(\d+)\./)[0]) + ' ' + this._inline(raw.replace(/^\d+\.\s*/,''))); continue; }
+      if (raw.trim() === '')       { out.push(''); continue; }
+
+      for (const l of this._wrap(stripAnsi(this._inline(raw)), width - 2)) {
+        out.push(this._inline(l));
+      }
     }
-    return out.length?out:[c.gray('(empty)')];
+    return out.length ? out : [c.gray('(empty)')];
   }
 
-  _il(t) {
+  _inline(t) {
     return t
-      .replace(/\*\*(.+?)\*\*/g,(_,x)=>c.bold(c.white(x)))
-      .replace(/`([^`]+)`/g,    (_,x)=>c.bgCode(c.cyan(' '+x+' '))+'\x1b[0m');
+      .replace(/\*\*(.+?)\*\*/g, (_, x) => c.bold(c.white(x)))
+      .replace(/`([^`]+)`/g,     (_, x) => c.bgCode(c.cyan(' '+x+' ')) + '\x1b[0m');
   }
 
   _wrap(text, width) {
-    if (!text||width<=0) return [text||''];
-    const words=text.split(' '); const lines=[]; let line='';
+    if (!text || width <= 0) return [text || ''];
+    const words = text.split(' '); const lines = []; let line = '';
     for (const w of words) {
-      if ((line+(line?' ':'')+w).length>width) { if(line)lines.push(line); line=w; }
-      else line=line?`${line} ${w}`:w;
+      if ((line+(line?' ':'')+w).length > width) { if (line) lines.push(line); line = w; }
+      else line = line ? `${line} ${w}` : w;
     }
     if (line) lines.push(line);
-    return lines.length?lines:[''];
+    return lines.length ? lines : [''];
   }
 
   _addHelp() {
-    this.messages.push({ role:'assistant', content:'## Help\n\n`/clear` new chat · `/help` commands · `/exit` quit\n\n`Enter` send · `↑↓` history · `PgUp/Dn` scroll · `Ctrl+C` quit' });
-    this._dirty=true; this._render();
+    this.messages.push({ role: 'assistant', content: [
+      '## Fabion Help',
+      '',
+      '**Commands:**',
+      '- `/clear` — clear conversation',
+      '- `/help` — show this help',
+      '- `/exit` — quit',
+      '',
+      '**Keyboard:**',
+      '- `Enter` send · `↑↓` history',
+      '- `PgUp/Dn` scroll · `Ctrl+U` clear input · `Ctrl+C` quit',
+    ].join('\n') });
+    this._dirty = true;
+    this._render();
   }
 }
