@@ -4,7 +4,7 @@
   "main": "main.js",
   "description": "The Fabion desktop application",
   "dependencies": {
-    "@fabion/core":   "*",
-    "@fabion/agents": "*"
+    "@fabion/core": "workspace:*",
+    "@fabion/agents": "workspace:*"
   }
 }

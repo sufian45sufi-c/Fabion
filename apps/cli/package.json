@@ -8,8 +8,8 @@
   },
   "description": "The Fabion agentic CLI",
   "dependencies": {
-    "@fabion/core":   "*",
-    "@fabion/agents": "*",
-    "@fabion/tools":  "*"
+    "@fabion/core": "workspace:*",
+    "@fabion/agents": "workspace:*",
+    "@fabion/tools": "workspace:*"
   }
 }

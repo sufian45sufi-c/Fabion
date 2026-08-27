@@ -5,6 +5,6 @@
   "main": "index.js",
   "description": "Built-in tools for the Fabion agent",
   "dependencies": {
-    "@fabion/core": "*"
+    "@fabion/core": "workspace:*"
   }
 }

@@ -25,17 +25,17 @@
  * what Fabio is doing in real time.
  */
 
-import { FabioState, AgentEventType, rootLogger } from '@fabion/core';
+import { FabioState, AgentEventType, rootLogger } from "@fabion/core";
 
-const log = rootLogger.child('agent');
+const log = rootLogger.child("agent");
 
 export class FabionAgent {
   constructor({ model, tools = [], skills = [] }) {
     // The model provider — swappable (Anthropic, local, our own model)
-    this.model  = model;
+    this.model = model;
 
     // Map of tool name → Tool instance for fast lookup
-    this.tools  = new Map(tools.map(t => [t.name, t]));
+    this.tools = new Map(tools.map((t) => [t.name, t]));
 
     // Active skills — their instructions get injected into every prompt
     this.skills = skills;
@@ -46,10 +46,10 @@ export class FabionAgent {
     // Event listeners — UI components subscribe to these
     this._listeners = [];
 
-    log.info('Agent initialized', {
-      model:  model?.name ?? 'none',
-      tools:  tools.map(t => t.name),
-      skills: skills.map(s => s.name),
+    log.info("Agent initialized", {
+      model: model?.name ?? "none",
+      tools: tools.map((t) => t.name),
+      skills: skills.map((s) => s.name),
     });
   }
 
@@ -66,7 +66,7 @@ export class FabionAgent {
   on(listener) {
     this._listeners.push(listener);
     return () => {
-      this._listeners = this._listeners.filter(l => l !== listener);
+      this._listeners = this._listeners.filter((l) => l !== listener);
     };
   }
 
@@ -85,12 +85,12 @@ export class FabionAgent {
    * Returns the final response text.
    */
   async run(userMessage, options = {}) {
-    const { workingDirectory = '.' } = options;
+    const { workingDirectory = "." } = options;
 
-    log.info('Running agent turn', { userMessage: userMessage.slice(0, 80) });
+    log.info("Running agent turn", { userMessage: userMessage.slice(0, 80) });
 
     // Add the user message to history
-    this.history.push({ role: 'user', content: userMessage });
+    this.history.push({ role: "user", content: userMessage });
 
     // Signal that Fabio is thinking
     this._emit(AgentEventType.THINKING);
@@ -102,27 +102,30 @@ export class FabionAgent {
       // Check if a model is connected
       if (!this.model) {
         const reply = this._noModelResponse(userMessage);
-        this.history.push({ role: 'assistant', content: reply });
-        this._emit(AgentEventType.DONE, { response: reply, fabioState: FabioState.SUCCESS });
+        this.history.push({ role: "assistant", content: reply });
+        for (const chunk of this._chunks(reply)) {
+          this._emit(AgentEventType.RESPONSE_CHUNK, { delta: chunk });
+          await new Promise((resolve) => setTimeout(resolve, 18));
+        }
+        this._emit(AgentEventType.DONE, {
+          response: reply,
+          fabioState: FabioState.SUCCESS,
+        });
         return reply;
       }
 
-      // Ask the model
-      const result = await this.model.generate(messages);
-
-      if (!result.ok) {
-        throw new Error(result.error);
+      let response = "";
+      for await (const chunk of this.model.stream(messages)) {
+        response += chunk;
+        this._emit(AgentEventType.RESPONSE_CHUNK, { delta: chunk });
       }
 
-      const response = result.text;
+      if (!response) {
+        throw new Error("The model returned an empty response");
+      }
 
       // Save response to history
-      this.history.push({ role: 'assistant', content: response });
-
-      // Stream the response back chunk by chunk
-      for (const chunk of response.split(' ')) {
-        this._emit(AgentEventType.RESPONSE_CHUNK, { delta: chunk + ' ' });
-      }
+      this.history.push({ role: "assistant", content: response });
 
       this._emit(AgentEventType.DONE, {
         response,
@@ -130,11 +133,16 @@ export class FabionAgent {
       });
 
       return response;
-
     } catch (err) {
-      log.error('Agent run failed', err);
+      log.error("Agent run failed", err);
       this._emit(AgentEventType.ERROR, { message: err.message });
       return `Error: ${err.message}`;
+    }
+  }
+
+  *_chunks(text, size = 3) {
+    for (let index = 0; index < text.length; index += size) {
+      yield text.slice(index, index + size);
     }
   }
 
@@ -147,10 +155,7 @@ export class FabionAgent {
   _buildMessages() {
     const systemPrompt = this._buildSystemPrompt();
 
-    return [
-      { role: 'system', content: systemPrompt },
-      ...this.history,
-    ];
+    return [{ role: "system", content: systemPrompt }, ...this.history];
   }
 
   /**
@@ -159,17 +164,17 @@ export class FabionAgent {
    */
   _buildSystemPrompt() {
     const base = [
-      'You are Fabio, the AI agent inside Fabion.',
-      'You are helpful, direct, and focused on getting things done.',
-      'You can read files, list directories, write files, and run commands.',
-      'Always explain what you are about to do before doing it.',
-      'Never run destructive commands without explicit user confirmation.',
-    ].join('\n');
+      "You are Fabio, the AI agent inside Fabion.",
+      "You are helpful, direct, and focused on getting things done.",
+      "You can read files, list directories, write files, and run commands.",
+      "Always explain what you are about to do before doing it.",
+      "Never run destructive commands without explicit user confirmation.",
+    ].join("\n");
 
     // Inject skill instructions if any skills are active
     const skillInstructions = this.skills
-      .map(skill => `\n## Skill: ${skill.name}\n${skill.instructions}`)
-      .join('\n');
+      .map((skill) => `\n## Skill: ${skill.name}\n${skill.instructions}`)
+      .join("\n");
 
     return base + skillInstructions;
   }
@@ -181,18 +186,18 @@ export class FabionAgent {
   _noModelResponse(userMessage) {
     return [
       `I received your message: "${userMessage}"`,
-      '',
-      'No model is connected yet — that comes in Phase 6.',
-      'The agent runtime, tools, and event system are all working.',
-      'Connect a ModelProvider to get real responses.',
-    ].join('\n');
+      "",
+      "No model is connected yet — that comes in Phase 6.",
+      "The agent runtime, tools, and event system are all working.",
+      "Connect a ModelProvider to get real responses.",
+    ].join("\n");
   }
 
   // ── History management ───────────────────────────────────────────────────────
 
   clearHistory() {
     this.history = [];
-    log.info('History cleared');
+    log.info("History cleared");
   }
 
   getHistory() {

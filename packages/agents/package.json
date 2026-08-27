@@ -5,7 +5,7 @@
   "main": "index.js",
   "description": "The Fabion agent runtime",
   "dependencies": {
-    "@fabion/core":  "*",
-    "@fabion/tools": "*"
+    "@fabion/core": "workspace:*",
+    "@fabion/tools": "workspace:*"
   }
 }

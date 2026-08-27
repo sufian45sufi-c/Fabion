@@ -9,11 +9,11 @@ Not a chatbot wrapper. Not a dashboard. A workspace.
 
 ## What is Fabion?
 
-| Component | Description |
-|---|---|
-| **Fabion Desktop** | Floating, spatial Electron workspace |
-| **Fabion CLI** | Agentic coding tool — `fabion "build X"` |
-| **Fabion Model** | Our own transformer model research project |
+| Component          | Description                                |
+| ------------------ | ------------------------------------------ |
+| **Fabion Desktop** | Floating, spatial Electron workspace       |
+| **Fabion CLI**     | Agentic coding tool — `fabion "build X"`   |
+| **Fabion Model**   | Our own transformer model research project |
 
 The mascot and identity of the platform is **Fabio** — the visual representation of the agent.
 
@@ -38,11 +38,25 @@ pnpm dev:desktop
 
 ### Environment variables
 
-Copy `.env.example` to `.env` and fill in your values:
+The CLI uses OpenRouter when `OPENROUTER_API_KEY` is set, or SiliconFlow when
+`SILICONFLOW_API_KEY` is set. Set an optional `FABION_MODEL` to override the
+provider's default model:
 
 ```bash
-FABION_API_KEY=your-api-key-here   # Remote model API key
+export OPENROUTER_API_KEY=your-api-key-here
+export FABION_MODEL=your-model-id              # optional
+pnpm dev:cli
 ```
+
+Alternatively, use SiliconFlow:
+
+```bash
+export SILICONFLOW_API_KEY=your-api-key-here
+pnpm dev:cli
+```
+
+Without either key, the CLI still runs in offline mode and explains that no
+model is connected.
 
 ---
 
@@ -80,16 +94,16 @@ fabion/
 
 ## Development phases
 
-| Phase | Status | Description |
-|---|---|---|
-| 1 | ✅ **Complete** | Monorepo foundation, CLI stub, Desktop shell |
-| 2 | 🔲 Planned | Desktop visual prototype |
-| 3 | 🔲 Planned | Agent runtime + tools |
-| 4 | 🔲 Planned | CLI agent connection |
-| 5 | 🔲 Planned | Skills system |
-| 6 | 🔲 Planned | Model abstraction |
-| 7 | 🔲 Planned | Fabion Model research |
-| 8 | 🔲 Planned | Full integration |
+| Phase | Status          | Description                                  |
+| ----- | --------------- | -------------------------------------------- |
+| 1     | ✅ **Complete** | Monorepo foundation, CLI stub, Desktop shell |
+| 2     | 🔲 Planned      | Desktop visual prototype                     |
+| 3     | 🔲 Planned      | Agent runtime + tools                        |
+| 4     | 🔲 Planned      | CLI agent connection                         |
+| 5     | 🔲 Planned      | Skills system                                |
+| 6     | 🔲 Planned      | Model abstraction                            |
+| 7     | 🔲 Planned      | Fabion Model research                        |
+| 8     | 🔲 Planned      | Full integration                             |
 
 ---
 
